@@ -2257,6 +2257,1130 @@ def generate_passive_tome():
 
 
 # ============================================================
+# 25. MAGE (32x48) - Purple-robed wizard with pointed hat & staff
+# ============================================================
+def generate_mage():
+    img = Image.new("RGBA", (32, 48), (0, 0, 0, 0))
+
+    # Purple robe palette (6 shading steps)
+    purp_hi = (180, 130, 220, 255)     # Brightest highlight
+    purp_lt = (150, 100, 200, 255)     # Light
+    purp = (110, 60, 170, 255)         # Base
+    purp_md = (85, 40, 145, 255)       # Mid shadow
+    purp_dk = (60, 25, 110, 255)       # Dark
+    purp_vdk = (38, 12, 75, 255)       # Deepest shadow
+    skin = (225, 185, 145, 255)
+    skin_shadow = (195, 155, 115, 255)
+    eye_dark = (30, 30, 45, 255)
+    hair_lt = (180, 175, 190, 255)
+    hair = (150, 145, 165, 255)
+    hair_dk = (110, 105, 125, 255)
+    staff_lt = (140, 100, 50, 255)
+    staff = (110, 75, 30, 255)
+    staff_dk = (80, 50, 15, 255)
+    crystal_hi = (200, 240, 255, 255)
+    crystal_lt = (120, 210, 255, 255)
+    crystal = (60, 170, 230, 255)
+    crystal_dk = (30, 120, 190, 255)
+    crystal_glow = (100, 200, 255, 100)
+    gold = (200, 170, 40, 255)
+    gold_hi = (240, 215, 80, 255)
+
+    # === POINTED HAT ===
+    # Hat tip
+    px(img, 15, 0, purp_lt)
+    fill_rect(img, 14, 1, 16, 1, purp_lt)
+    px(img, 14, 1, purp_hi)
+    fill_rect(img, 13, 2, 17, 3, purp)
+    fill_rect(img, 12, 4, 18, 5, purp)
+    fill_rect(img, 11, 6, 19, 7, purp)
+    # Hat body
+    fill_rect(img, 10, 8, 21, 9, purp)
+    fill_rect(img, 9, 10, 22, 11, purp)
+    # Hat highlight (top-left light)
+    fill_rect(img, 13, 2, 15, 3, purp_hi)
+    fill_rect(img, 12, 4, 15, 5, purp_lt)
+    fill_rect(img, 11, 6, 14, 7, purp_lt)
+    dither_rect(img, 15, 6, 17, 7, purp_lt, purp)
+    fill_rect(img, 10, 8, 14, 9, purp_lt)
+    fill_rect(img, 10, 8, 12, 8, purp_hi)
+    # Hat shadow (right)
+    fill_rect(img, 18, 6, 19, 7, purp_dk)
+    fill_rect(img, 20, 8, 21, 9, purp_dk)
+    fill_rect(img, 20, 10, 22, 11, purp_vdk)
+    # Hat brim
+    fill_rect(img, 8, 12, 23, 13, purp_md)
+    fill_rect(img, 8, 12, 14, 12, purp)
+    fill_rect(img, 8, 12, 11, 12, purp_lt)
+    fill_rect(img, 21, 13, 23, 13, purp_vdk)
+    # Hat band / gold trim
+    fill_rect(img, 9, 11, 22, 11, gold)
+    fill_rect(img, 9, 11, 14, 11, gold_hi)
+    # Star decoration on hat
+    px(img, 15, 5, gold_hi)
+    px(img, 14, 6, gold)
+    px(img, 16, 6, gold)
+    px(img, 15, 7, gold)
+
+    # Face (below hat brim)
+    fill_rect(img, 12, 13, 19, 16, skin)
+    fill_rect(img, 17, 14, 19, 16, skin_shadow)
+    # Eyes
+    px(img, 13, 14, eye_dark)
+    px(img, 17, 14, eye_dark)
+    # Eye whites
+    px(img, 14, 14, (240, 240, 240, 255))
+    px(img, 18, 14, (240, 240, 240, 255))
+    # Beard (short gray)
+    fill_rect(img, 12, 16, 18, 17, hair)
+    fill_rect(img, 13, 18, 17, 18, hair_dk)
+    fill_rect(img, 14, 19, 16, 19, hair_dk)
+    fill_rect(img, 12, 16, 14, 17, hair_lt)
+
+    # Neck
+    fill_rect(img, 13, 17, 18, 18, skin)
+    px(img, 18, 18, skin_shadow)
+
+    # === ROBE / TORSO ===
+    fill_rect(img, 8, 19, 23, 30, purp)
+    # Highlight
+    fill_rect(img, 8, 19, 14, 24, purp_lt)
+    fill_rect(img, 8, 19, 11, 21, purp_hi)
+    dither_rect(img, 12, 19, 14, 22, purp_hi, purp_lt)
+    # Shadow
+    fill_rect(img, 20, 26, 23, 30, purp_dk)
+    fill_rect(img, 22, 23, 23, 30, purp_vdk)
+    dither_rect(img, 19, 27, 21, 30, purp, purp_dk)
+    # Robe center fold
+    fill_rect(img, 15, 19, 16, 30, purp_md)
+    # Belt / sash
+    fill_rect(img, 8, 29, 23, 30, gold)
+    fill_rect(img, 8, 29, 14, 29, gold_hi)
+    fill_rect(img, 20, 30, 23, 30, (170, 130, 20, 255))
+
+    # === SHOULDERS ===
+    fill_rect(img, 5, 18, 8, 21, purp_lt)
+    fill_rect(img, 5, 18, 6, 19, purp_hi)
+    fill_rect(img, 7, 20, 8, 21, purp_md)
+    fill_rect(img, 23, 18, 26, 21, purp)
+    fill_rect(img, 25, 20, 26, 21, purp_dk)
+
+    # === ARMS (sleeves) ===
+    # Left arm (holding staff)
+    fill_rect(img, 4, 22, 7, 28, purp)
+    fill_rect(img, 4, 22, 5, 25, purp_lt)
+    fill_rect(img, 6, 26, 7, 28, purp_dk)
+    # Right arm
+    fill_rect(img, 24, 22, 27, 28, purp_md)
+    fill_rect(img, 26, 25, 27, 28, purp_dk)
+    # Hands
+    fill_rect(img, 4, 29, 7, 30, skin)
+    fill_rect(img, 6, 30, 7, 30, skin_shadow)
+    fill_rect(img, 24, 29, 27, 30, skin_shadow)
+
+    # === ROBE SKIRT / LEGS ===
+    fill_rect(img, 9, 31, 22, 44, purp_dk)
+    # Left side lighter
+    fill_rect(img, 9, 31, 14, 38, purp_md)
+    fill_rect(img, 9, 31, 12, 34, purp)
+    dither_rect(img, 13, 35, 15, 40, purp_md, purp_dk)
+    # Right side darker
+    fill_rect(img, 19, 38, 22, 44, purp_vdk)
+    # Robe split at bottom center
+    fill_rect(img, 15, 40, 16, 44, purp_vdk)
+    # Bottom hem
+    fill_rect(img, 9, 44, 14, 44, purp_md)
+    fill_rect(img, 17, 44, 22, 44, purp_vdk)
+
+    # === BOOTS (visible at bottom of robe) ===
+    fill_rect(img, 9, 45, 14, 47, (60, 45, 25, 255))
+    fill_rect(img, 17, 45, 22, 47, (60, 45, 25, 255))
+    fill_rect(img, 9, 45, 11, 46, (80, 60, 35, 255))
+    fill_rect(img, 9, 47, 14, 47, (35, 25, 12, 255))
+    fill_rect(img, 17, 47, 22, 47, (35, 25, 12, 255))
+
+    # === STAFF (right side, held in left hand) ===
+    # Staff shaft
+    for y in range(5, 31):
+        px(img, 3, y, staff)
+        px(img, 2, y, staff_lt)
+    for y in range(18, 31):
+        px(img, 3, y, staff_dk)
+    # Crystal orb at top of staff
+    draw_ellipse_filled(img, 0, 1, 5, 6, crystal)
+    fill_rect(img, 1, 2, 3, 4, crystal_lt)
+    px(img, 1, 2, crystal_hi)
+    px(img, 2, 2, crystal_hi)
+    fill_rect(img, 4, 4, 5, 5, crystal_dk)
+    # Glow around crystal
+    px(img, 0, 0, crystal_glow)
+    px(img, 5, 0, crystal_glow)
+    px(img, 6, 3, crystal_glow)
+    px(img, 0, 7, crystal_glow)
+    px(img, 5, 7, crystal_glow)
+    # Staff mounting bracket
+    fill_rect(img, 2, 6, 3, 7, gold)
+    px(img, 2, 6, gold_hi)
+
+    add_outline(img)
+    save(img, "mage.png")
+
+
+# ============================================================
+# 26. BERSERKER (32x48) - Muscular red warrior with big axe
+# ============================================================
+def generate_berserker():
+    img = Image.new("RGBA", (32, 48), (0, 0, 0, 0))
+
+    # Red / crimson armor palette
+    red_hi = (230, 100, 90, 255)       # Brightest highlight
+    red_lt = (200, 65, 55, 255)        # Light
+    red = (170, 40, 35, 255)           # Base
+    red_md = (140, 28, 25, 255)        # Mid shadow
+    red_dk = (105, 18, 15, 255)        # Dark
+    red_vdk = (70, 10, 8, 255)         # Deepest shadow
+    skin = (215, 175, 130, 255)
+    skin_lt = (235, 200, 160, 255)
+    skin_shadow = (185, 140, 95, 255)
+    skin_dk = (150, 110, 70, 255)
+    eye_dark = (30, 30, 45, 255)
+    hair_hi = (200, 120, 40, 255)
+    hair = (170, 90, 25, 255)
+    hair_dk = (130, 60, 12, 255)
+    brown = (120, 70, 30, 255)
+    brown_dk = (80, 45, 15, 255)
+    axe_hi = (200, 210, 220, 255)
+    axe = (160, 170, 180, 255)
+    axe_dk = (120, 125, 135, 255)
+    axe_vdk = (80, 85, 95, 255)
+    gold = (200, 170, 40, 255)
+    gold_hi = (240, 215, 80, 255)
+
+    # === WILD HAIR (no helmet) ===
+    # Hair flowing outward
+    fill_rect(img, 10, 0, 21, 2, hair)
+    fill_rect(img, 8, 2, 23, 4, hair)
+    fill_rect(img, 9, 5, 22, 6, hair)
+    # Hair highlight
+    fill_rect(img, 10, 0, 15, 2, hair_hi)
+    fill_rect(img, 8, 2, 13, 3, hair_hi)
+    dither_rect(img, 14, 2, 18, 3, hair_hi, hair)
+    # Hair shadow
+    fill_rect(img, 20, 3, 23, 4, hair_dk)
+    fill_rect(img, 21, 5, 22, 6, hair_dk)
+    # Wild tufts sticking out
+    px(img, 7, 3, hair)
+    px(img, 24, 3, hair_dk)
+    px(img, 8, 1, hair)
+    px(img, 22, 1, hair_dk)
+
+    # Face
+    fill_rect(img, 11, 5, 20, 13, skin)
+    fill_rect(img, 18, 8, 20, 13, skin_shadow)
+    # Forehead
+    fill_rect(img, 11, 5, 20, 6, skin_lt)
+    # Eyes (fierce / angry)
+    fill_rect(img, 12, 8, 14, 9, (240, 240, 240, 255))
+    fill_rect(img, 17, 8, 19, 9, (240, 240, 240, 255))
+    px(img, 13, 8, eye_dark)
+    px(img, 14, 9, eye_dark)
+    px(img, 18, 8, eye_dark)
+    px(img, 19, 9, eye_dark)
+    # Angry brow
+    fill_rect(img, 12, 7, 14, 7, skin_dk)
+    fill_rect(img, 17, 7, 19, 7, skin_dk)
+    # Nose
+    px(img, 15, 10, skin_shadow)
+    px(img, 16, 10, skin_shadow)
+    # Mouth / grimace
+    fill_rect(img, 13, 12, 18, 12, skin_dk)
+    px(img, 14, 12, (240, 240, 240, 255))
+    px(img, 16, 12, (240, 240, 240, 255))
+    # War paint / scar
+    px(img, 12, 10, red)
+    px(img, 12, 11, red)
+
+    # Neck (thicker for muscular build)
+    fill_rect(img, 12, 14, 19, 15, skin)
+    fill_rect(img, 18, 15, 19, 15, skin_shadow)
+
+    # === TORSO (bare chest with leather straps) ===
+    # Chest area (exposed skin with muscle)
+    fill_rect(img, 9, 16, 22, 28, skin)
+    # Muscle shading
+    fill_rect(img, 9, 16, 14, 20, skin_lt)
+    dither_rect(img, 15, 16, 17, 20, skin_lt, skin)
+    fill_rect(img, 19, 22, 22, 28, skin_shadow)
+    fill_rect(img, 21, 20, 22, 28, skin_dk)
+    # Pectoral line
+    fill_rect(img, 15, 18, 16, 22, skin_shadow)
+    # Abs detail
+    px(img, 14, 24, skin_shadow)
+    px(img, 17, 24, skin_shadow)
+    px(img, 14, 26, skin_shadow)
+    px(img, 17, 26, skin_shadow)
+    # Leather strap across chest (X pattern)
+    for i in range(10):
+        px(img, 9 + i, 16 + i, brown)
+        if 9 + i + 1 < 32:
+            px(img, 9 + i + 1, 16 + i, brown_dk)
+    for i in range(10):
+        px(img, 22 - i, 16 + i, brown)
+        if 22 - i - 1 >= 0:
+            px(img, 22 - i - 1, 16 + i, brown_dk)
+
+    # Red leather pauldrons / shoulder guards
+    fill_rect(img, 5, 15, 9, 19, red)
+    fill_rect(img, 5, 15, 7, 17, red_lt)
+    fill_rect(img, 5, 15, 6, 16, red_hi)
+    fill_rect(img, 8, 18, 9, 19, red_dk)
+    fill_rect(img, 22, 15, 26, 19, red_md)
+    fill_rect(img, 25, 18, 26, 19, red_dk)
+
+    # Belt
+    fill_rect(img, 9, 29, 22, 30, red_dk)
+    fill_rect(img, 9, 29, 22, 29, red)
+    fill_rect(img, 9, 29, 14, 29, red_lt)
+    # Belt buckle
+    fill_rect(img, 14, 29, 17, 30, gold)
+    px(img, 14, 29, gold_hi)
+
+    # === ARMS (exposed / muscular) ===
+    # Left arm
+    fill_rect(img, 4, 20, 7, 28, skin)
+    fill_rect(img, 4, 20, 5, 24, skin_lt)
+    fill_rect(img, 6, 25, 7, 28, skin_shadow)
+    # Right arm
+    fill_rect(img, 24, 20, 27, 28, skin_shadow)
+    fill_rect(img, 26, 24, 27, 28, skin_dk)
+    # Arm bands (red leather)
+    fill_rect(img, 4, 23, 7, 24, red)
+    fill_rect(img, 4, 23, 5, 23, red_lt)
+    fill_rect(img, 24, 23, 27, 24, red_dk)
+    # Wrist wraps
+    fill_rect(img, 4, 27, 7, 28, brown)
+    fill_rect(img, 24, 27, 27, 28, brown_dk)
+    # Hands
+    fill_rect(img, 4, 29, 7, 30, skin)
+    fill_rect(img, 6, 30, 7, 30, skin_shadow)
+    fill_rect(img, 24, 29, 27, 30, skin_shadow)
+
+    # === LEGS (red pants) ===
+    fill_rect(img, 10, 31, 15, 42, red_dk)
+    fill_rect(img, 17, 31, 22, 42, red_dk)
+    # Left leg highlight
+    fill_rect(img, 10, 31, 12, 36, red_md)
+    fill_rect(img, 10, 31, 11, 33, red)
+    dither_rect(img, 10, 37, 12, 40, red_md, red_dk)
+    # Right leg shadow
+    fill_rect(img, 20, 37, 22, 42, red_vdk)
+    # Knee guards
+    fill_rect(img, 10, 36, 15, 37, red)
+    fill_rect(img, 17, 36, 22, 37, red_md)
+
+    # === BOOTS ===
+    fill_rect(img, 9, 43, 16, 46, brown)
+    fill_rect(img, 16, 43, 23, 46, brown)
+    fill_rect(img, 9, 43, 12, 44, (150, 95, 45, 255))
+    fill_rect(img, 21, 45, 23, 46, brown_dk)
+    fill_rect(img, 9, 46, 16, 47, brown_dk)
+    fill_rect(img, 16, 46, 23, 47, brown_dk)
+
+    # === BATTLE AXE (large, right side) ===
+    # Axe handle (long shaft)
+    fill_rect(img, 27, 8, 28, 30, brown_dk)
+    fill_rect(img, 27, 8, 27, 20, (110, 75, 30, 255))
+    # Axe head (large double-sided)
+    # Left blade
+    fill_rect(img, 24, 6, 26, 14, axe)
+    fill_rect(img, 23, 8, 24, 12, axe)
+    fill_rect(img, 24, 6, 25, 9, axe_hi)
+    fill_rect(img, 24, 12, 26, 14, axe_dk)
+    px(img, 23, 8, axe_hi)
+    # Right blade
+    fill_rect(img, 29, 6, 31, 14, axe)
+    fill_rect(img, 31, 8, 31, 12, axe_dk)
+    fill_rect(img, 29, 6, 30, 9, axe_hi)
+    fill_rect(img, 29, 12, 31, 14, axe_vdk)
+    # Axe head center
+    fill_rect(img, 26, 7, 29, 13, axe_dk)
+    fill_rect(img, 26, 7, 28, 9, axe)
+    # Edge highlights
+    px(img, 23, 9, axe_hi)
+    px(img, 23, 10, axe_hi)
+    # Pommel
+    px(img, 27, 31, gold)
+    px(img, 28, 31, gold_hi)
+
+    add_outline(img)
+    save(img, "berserker.png")
+
+
+# ============================================================
+# 27. THIEF (32x48) - Dark hooded rogue with twin daggers
+# ============================================================
+def generate_thief():
+    img = Image.new("RGBA", (32, 48), (0, 0, 0, 0))
+
+    # Dark gray / charcoal palette
+    gray_hi = (120, 120, 130, 255)     # Brightest highlight
+    gray_lt = (90, 90, 100, 255)       # Light
+    gray = (60, 60, 70, 255)           # Base
+    gray_md = (45, 45, 55, 255)        # Mid shadow
+    gray_dk = (30, 30, 40, 255)        # Dark
+    gray_vdk = (18, 18, 25, 255)       # Deepest shadow
+    skin = (225, 185, 145, 255)
+    skin_shadow = (195, 155, 115, 255)
+    eye_dark = (30, 30, 45, 255)
+    mask = (50, 48, 55, 255)
+    mask_dk = (35, 33, 40, 255)
+    blade_hi = (220, 225, 235, 255)
+    blade = (180, 190, 200, 255)
+    blade_dk = (140, 150, 165, 255)
+    hilt_brown = (100, 65, 30, 255)
+    hilt_dk = (70, 42, 15, 255)
+    gold = (200, 170, 40, 255)
+    gold_hi = (240, 215, 80, 255)
+    belt_brown = (90, 55, 22, 255)
+
+    # === HOOD (deep, pulled low) ===
+    # Hood peak
+    fill_rect(img, 14, 0, 17, 1, gray_lt)
+    px(img, 15, 0, gray_hi)
+    # Hood top
+    fill_rect(img, 11, 1, 20, 3, gray_lt)
+    fill_rect(img, 10, 4, 21, 6, gray)
+    fill_rect(img, 9, 7, 22, 13, gray)
+    # Hood highlight (top-left light)
+    fill_rect(img, 11, 1, 15, 3, gray_hi)
+    fill_rect(img, 10, 4, 13, 6, gray_hi)
+    dither_rect(img, 14, 4, 16, 6, gray_hi, gray_lt)
+    fill_rect(img, 9, 7, 12, 9, gray_lt)
+    # Hood shadow (right & deep)
+    fill_rect(img, 19, 8, 22, 13, gray_dk)
+    fill_rect(img, 21, 10, 22, 13, gray_vdk)
+    # Hood drape sides
+    fill_rect(img, 9, 13, 10, 16, gray_md)
+    fill_rect(img, 21, 13, 22, 16, gray_dk)
+    # Hood interior shadow (makes it look deep)
+    fill_rect(img, 11, 8, 20, 9, gray_dk)
+
+    # Face (partially visible under hood)
+    fill_rect(img, 12, 9, 19, 12, skin)
+    fill_rect(img, 17, 10, 19, 12, skin_shadow)
+    # Eyes (sharp, narrow)
+    px(img, 14, 10, eye_dark)
+    px(img, 18, 10, eye_dark)
+    # Eye whites
+    px(img, 13, 10, (240, 240, 240, 255))
+    px(img, 17, 10, (240, 240, 240, 255))
+
+    # Face mask / bandana covering lower face
+    fill_rect(img, 12, 12, 19, 15, mask)
+    fill_rect(img, 12, 12, 15, 13, (60, 58, 65, 255))
+    fill_rect(img, 17, 14, 19, 15, mask_dk)
+    # Mask fold line
+    fill_rect(img, 12, 13, 19, 13, mask_dk)
+
+    # Neck (hidden by mask, thin strip visible)
+    fill_rect(img, 13, 15, 18, 16, gray_md)
+
+    # === TORSO / CLOAK ===
+    fill_rect(img, 8, 17, 23, 30, gray)
+    # Highlight
+    fill_rect(img, 8, 17, 14, 22, gray_lt)
+    fill_rect(img, 8, 17, 11, 19, gray_hi)
+    dither_rect(img, 12, 17, 14, 20, gray_hi, gray_lt)
+    # Shadow
+    fill_rect(img, 20, 24, 23, 30, gray_dk)
+    fill_rect(img, 22, 22, 23, 30, gray_vdk)
+    dither_rect(img, 19, 26, 21, 30, gray, gray_dk)
+    # Cloak folds
+    fill_rect(img, 15, 18, 16, 28, gray_md)
+
+    # Belt with pouches
+    fill_rect(img, 8, 29, 23, 30, belt_brown)
+    fill_rect(img, 8, 29, 23, 29, hilt_dk)
+    # Belt buckle
+    fill_rect(img, 14, 29, 17, 30, gold)
+    px(img, 14, 29, gold_hi)
+    # Belt pouches
+    fill_rect(img, 19, 27, 21, 29, belt_brown)
+    fill_rect(img, 19, 27, 20, 28, (110, 70, 30, 255))
+
+    # === SHOULDER GUARDS ===
+    fill_rect(img, 5, 16, 8, 19, gray_lt)
+    fill_rect(img, 5, 16, 6, 17, gray_hi)
+    fill_rect(img, 7, 18, 8, 19, gray_md)
+    fill_rect(img, 23, 16, 26, 19, gray)
+    fill_rect(img, 25, 18, 26, 19, gray_dk)
+
+    # === ARMS ===
+    # Left arm
+    fill_rect(img, 4, 20, 7, 28, gray)
+    fill_rect(img, 4, 20, 5, 24, gray_lt)
+    fill_rect(img, 6, 25, 7, 28, gray_dk)
+    # Right arm
+    fill_rect(img, 24, 20, 27, 28, gray_md)
+    fill_rect(img, 26, 24, 27, 28, gray_dk)
+    # Bracers
+    fill_rect(img, 4, 26, 7, 28, gray_dk)
+    fill_rect(img, 24, 26, 27, 28, gray_vdk)
+    # Hands
+    fill_rect(img, 4, 29, 7, 30, skin)
+    fill_rect(img, 6, 30, 7, 30, skin_shadow)
+    fill_rect(img, 24, 29, 27, 30, skin_shadow)
+
+    # === LEGS ===
+    fill_rect(img, 10, 31, 15, 42, gray_dk)
+    fill_rect(img, 17, 31, 22, 42, gray_dk)
+    # Left leg highlight
+    fill_rect(img, 10, 31, 12, 36, gray_md)
+    fill_rect(img, 10, 31, 11, 33, gray)
+    dither_rect(img, 10, 37, 12, 40, gray_md, gray_dk)
+    # Right leg shadow
+    fill_rect(img, 20, 37, 22, 42, gray_vdk)
+    # Knee pads
+    fill_rect(img, 10, 36, 15, 37, gray)
+    fill_rect(img, 17, 36, 22, 37, gray_md)
+
+    # === BOOTS ===
+    fill_rect(img, 9, 43, 16, 46, gray_dk)
+    fill_rect(img, 16, 43, 23, 46, gray_dk)
+    fill_rect(img, 9, 43, 12, 44, gray_md)
+    fill_rect(img, 21, 45, 23, 46, gray_vdk)
+    fill_rect(img, 9, 46, 16, 47, gray_vdk)
+    fill_rect(img, 16, 46, 23, 47, gray_vdk)
+
+    # === LEFT DAGGER ===
+    # Hilt
+    px(img, 3, 29, gold)
+    fill_rect(img, 2, 26, 3, 28, hilt_brown)
+    dither_rect(img, 2, 26, 3, 28, hilt_brown, hilt_dk, "horizontal")
+    # Crossguard
+    fill_rect(img, 1, 25, 4, 25, gold)
+    px(img, 1, 25, gold_hi)
+    # Blade
+    fill_rect(img, 2, 18, 3, 24, blade)
+    for y in range(18, 25):
+        px(img, 2, y, blade_hi)
+    for y in range(21, 25):
+        px(img, 3, y, blade_dk)
+    # Blade tip
+    px(img, 2, 17, blade_hi)
+    px(img, 3, 17, blade)
+
+    # === RIGHT DAGGER ===
+    # Hilt
+    px(img, 28, 29, gold)
+    fill_rect(img, 28, 26, 29, 28, hilt_brown)
+    dither_rect(img, 28, 26, 29, 28, hilt_brown, hilt_dk, "horizontal")
+    # Crossguard
+    fill_rect(img, 27, 25, 30, 25, gold)
+    px(img, 30, 25, gold_hi)
+    # Blade
+    fill_rect(img, 28, 18, 29, 24, blade)
+    for y in range(18, 25):
+        px(img, 28, y, blade_hi)
+    for y in range(21, 25):
+        px(img, 29, y, blade_dk)
+    # Blade tip
+    px(img, 28, 17, blade_hi)
+    px(img, 29, 17, blade)
+
+    add_outline(img)
+    save(img, "thief.png")
+
+
+# ============================================================
+# 28. TORCH (10x16) - Small wall torch, destructible prop
+# ============================================================
+def generate_torch():
+    img = Image.new("RGBA", (10, 16), (0, 0, 0, 0))
+
+    wood_hi = (160, 110, 55, 255)
+    wood_lt = (140, 90, 40, 255)
+    wood = (110, 70, 28, 255)
+    wood_dk = (80, 48, 15, 255)
+    wood_vdk = (55, 30, 8, 255)
+    flame_white = (255, 255, 220, 255)
+    flame_hi = (255, 230, 100, 255)
+    flame_lt = (255, 200, 60, 255)
+    flame = (255, 160, 30, 255)
+    flame_md = (240, 120, 20, 255)
+    flame_dk = (220, 80, 15, 255)
+    flame_tip = (200, 60, 20, 200)
+    iron = (100, 100, 110, 255)
+    iron_dk = (65, 65, 75, 255)
+
+    # === HANDLE ===
+    fill_rect(img, 4, 9, 5, 15, wood)
+    fill_rect(img, 4, 9, 4, 12, wood_lt)
+    px(img, 4, 9, wood_hi)
+    fill_rect(img, 5, 13, 5, 15, wood_dk)
+    # Handle wrap (iron band)
+    fill_rect(img, 3, 9, 6, 9, iron)
+    fill_rect(img, 3, 9, 4, 9, (120, 120, 130, 255))
+    fill_rect(img, 5, 9, 6, 9, iron_dk)
+    # Handle bottom
+    px(img, 4, 15, wood_vdk)
+    px(img, 5, 15, wood_vdk)
+
+    # === FLAME ===
+    # Flame base (widest)
+    fill_rect(img, 3, 6, 6, 8, flame)
+    fill_rect(img, 3, 6, 4, 7, flame_lt)
+    fill_rect(img, 5, 7, 6, 8, flame_dk)
+    # Flame mid
+    fill_rect(img, 3, 4, 6, 5, flame_lt)
+    fill_rect(img, 3, 4, 4, 4, flame_hi)
+    fill_rect(img, 5, 5, 6, 5, flame_md)
+    # Flame upper
+    fill_rect(img, 3, 2, 5, 3, flame_hi)
+    px(img, 3, 2, flame_white)
+    px(img, 4, 3, flame_lt)
+    # Flame tip
+    px(img, 4, 1, flame_lt)
+    px(img, 4, 0, flame_tip)
+    # Inner core (bright)
+    px(img, 4, 5, flame_white)
+    px(img, 4, 6, flame_hi)
+    px(img, 4, 7, flame_lt)
+    # Flicker detail
+    px(img, 6, 4, flame_md)
+    px(img, 2, 5, flame_md)
+    px(img, 5, 2, flame_md)
+
+    add_outline(img)
+    save(img, "torch.png")
+
+
+# ============================================================
+# 29. BARREL (14x16) - Wooden barrel, destructible prop
+# ============================================================
+def generate_barrel():
+    img = Image.new("RGBA", (14, 16), (0, 0, 0, 0))
+
+    wood_hi = (185, 130, 70, 255)
+    wood_lt = (165, 110, 55, 255)
+    wood = (140, 88, 38, 255)
+    wood_md = (115, 68, 25, 255)
+    wood_dk = (88, 50, 15, 255)
+    wood_vdk = (60, 32, 8, 255)
+    band_hi = (130, 130, 140, 255)
+    band = (100, 100, 115, 255)
+    band_dk = (70, 70, 80, 255)
+    band_vdk = (45, 45, 55, 255)
+
+    # Barrel body (slightly curved silhouette)
+    # Top narrow
+    fill_rect(img, 3, 0, 10, 1, wood)
+    # Upper wider
+    fill_rect(img, 2, 2, 11, 4, wood)
+    # Middle widest (barrel bulge)
+    fill_rect(img, 1, 5, 12, 10, wood)
+    # Lower wider
+    fill_rect(img, 2, 11, 11, 13, wood)
+    # Bottom narrow
+    fill_rect(img, 3, 14, 10, 15, wood)
+
+    # Wood plank lines (vertical)
+    for x in [4, 7, 10]:
+        for y in range(16):
+            c = get_px(img, x, y)
+            if c[3] > 0:
+                px(img, x, y, wood_md)
+
+    # Highlight (top-left light)
+    fill_rect(img, 3, 0, 6, 1, wood_lt)
+    fill_rect(img, 2, 2, 5, 4, wood_lt)
+    fill_rect(img, 1, 5, 4, 8, wood_lt)
+    fill_rect(img, 1, 5, 3, 6, wood_hi)
+    dither_rect(img, 5, 2, 7, 5, wood_lt, wood)
+
+    # Shadow (right side)
+    fill_rect(img, 10, 5, 12, 10, wood_dk)
+    fill_rect(img, 11, 7, 12, 10, wood_vdk)
+    fill_rect(img, 10, 11, 11, 13, wood_dk)
+    dither_rect(img, 8, 8, 10, 12, wood, wood_dk)
+
+    # Top face (slight oval)
+    fill_rect(img, 4, 0, 9, 0, wood_md)
+    px(img, 4, 0, wood_lt)
+
+    # Bottom edge
+    fill_rect(img, 3, 15, 10, 15, wood_vdk)
+
+    # Metal bands (horizontal straps)
+    # Top band
+    fill_rect(img, 2, 3, 11, 3, band)
+    fill_rect(img, 2, 3, 5, 3, band_hi)
+    fill_rect(img, 9, 3, 11, 3, band_dk)
+    # Middle band
+    fill_rect(img, 1, 7, 12, 8, band)
+    fill_rect(img, 1, 7, 4, 7, band_hi)
+    fill_rect(img, 1, 7, 2, 7, (150, 150, 160, 255))
+    fill_rect(img, 10, 8, 12, 8, band_dk)
+    fill_rect(img, 11, 8, 12, 8, band_vdk)
+    # Bottom band
+    fill_rect(img, 2, 12, 11, 12, band)
+    fill_rect(img, 2, 12, 5, 12, band_hi)
+    fill_rect(img, 9, 12, 11, 12, band_dk)
+
+    # Rivets on bands
+    px(img, 3, 3, band_hi)
+    px(img, 10, 3, band_vdk)
+    px(img, 2, 7, (150, 150, 160, 255))
+    px(img, 11, 8, band_vdk)
+    px(img, 3, 12, band_hi)
+    px(img, 10, 12, band_vdk)
+
+    add_outline(img)
+    save(img, "barrel.png")
+
+
+# ============================================================
+# 30. CRYSTAL (12x18) - Glowing blue crystal formation
+# ============================================================
+def generate_crystal():
+    img = Image.new("RGBA", (12, 18), (0, 0, 0, 0))
+
+    glow = (80, 180, 255, 60)
+    crys_white = (220, 240, 255, 255)
+    crys_hi = (160, 220, 255, 255)
+    crys_lt = (100, 190, 255, 255)
+    crys = (50, 140, 230, 255)
+    crys_md = (30, 100, 200, 255)
+    crys_dk = (15, 70, 165, 255)
+    crys_vdk = (8, 45, 120, 255)
+    base = (60, 55, 70, 255)
+    base_dk = (40, 35, 50, 255)
+
+    # Stone base
+    fill_rect(img, 1, 15, 10, 17, base)
+    fill_rect(img, 2, 14, 9, 14, base)
+    fill_rect(img, 1, 15, 4, 16, (75, 70, 85, 255))
+    fill_rect(img, 8, 16, 10, 17, base_dk)
+
+    # Main crystal (tall center)
+    fill_rect(img, 4, 2, 7, 14, crys)
+    # Taper at top
+    fill_rect(img, 5, 0, 6, 1, crys_lt)
+    fill_rect(img, 4, 1, 7, 2, crys)
+    # Crystal highlight (top-left)
+    fill_rect(img, 4, 2, 5, 6, crys_lt)
+    fill_rect(img, 4, 2, 4, 4, crys_hi)
+    px(img, 5, 0, crys_hi)
+    px(img, 5, 1, crys_white)
+    dither_rect(img, 5, 3, 6, 6, crys_lt, crys)
+    # Crystal shadow (right)
+    fill_rect(img, 7, 8, 7, 14, crys_dk)
+    fill_rect(img, 6, 10, 7, 14, crys_md)
+    dither_rect(img, 6, 7, 7, 10, crys, crys_md)
+
+    # Facet line (diagonal across crystal)
+    for i in range(5):
+        px(img, 4 + (i // 2), 4 + i, crys_md)
+
+    # Small crystal shard (left)
+    fill_rect(img, 1, 8, 3, 14, crys_md)
+    fill_rect(img, 2, 6, 3, 7, crys)
+    px(img, 2, 5, crys_lt)
+    fill_rect(img, 1, 8, 2, 10, crys)
+    px(img, 1, 8, crys_lt)
+    fill_rect(img, 3, 12, 3, 14, crys_dk)
+
+    # Small crystal shard (right)
+    fill_rect(img, 8, 9, 10, 14, crys_md)
+    fill_rect(img, 8, 7, 9, 8, crys)
+    px(img, 8, 6, crys_lt)
+    fill_rect(img, 9, 11, 10, 14, crys_dk)
+    fill_rect(img, 10, 13, 10, 14, crys_vdk)
+
+    # Inner glow / bright core
+    px(img, 5, 4, crys_white)
+    px(img, 5, 5, crys_hi)
+    px(img, 5, 8, crys_hi)
+    px(img, 4, 6, crys_hi)
+
+    # Ambient glow pixels
+    px(img, 3, 3, glow)
+    px(img, 8, 3, glow)
+    px(img, 0, 9, glow)
+    px(img, 11, 10, glow)
+    px(img, 3, 16, glow)
+    px(img, 8, 16, glow)
+
+    add_outline(img)
+    save(img, "crystal.png")
+
+
+# ============================================================
+# 31. GOLD COIN (12x12) - Collectible gold coin
+# ============================================================
+def generate_gold_coin():
+    img = Image.new("RGBA", (12, 12), (0, 0, 0, 0))
+
+    gold_hi = (255, 240, 120, 255)
+    gold_lt = (255, 215, 75, 255)
+    gold = (230, 185, 45, 255)
+    gold_md = (200, 155, 30, 255)
+    gold_dk = (165, 120, 18, 255)
+    gold_vdk = (125, 85, 10, 255)
+    shine = (255, 255, 200, 255)
+    emblem = (180, 130, 15, 255)
+
+    # Circular coin shape (using ellipse rows)
+    coin_rows = {
+        0: (4, 7),
+        1: (3, 8),
+        2: (2, 9),
+        3: (1, 10),
+        4: (1, 10),
+        5: (1, 10),
+        6: (1, 10),
+        7: (1, 10),
+        8: (1, 10),
+        9: (2, 9),
+        10: (3, 8),
+        11: (4, 7),
+    }
+
+    # Fill coin with gradient
+    for y, (xs, xe) in coin_rows.items():
+        for x in range(xs, xe + 1):
+            # Gradient: top-left bright, bottom-right dark
+            d = (x - 3) + (y - 3)
+            if d < -2:
+                px(img, x, y, gold_hi)
+            elif d < 1:
+                px(img, x, y, gold_lt)
+            elif d < 4:
+                px(img, x, y, gold)
+            elif d < 7:
+                px(img, x, y, gold_md)
+            elif d < 10:
+                px(img, x, y, gold_dk)
+            else:
+                px(img, x, y, gold_vdk)
+
+    # Coin rim (darker edge all around)
+    for y, (xs, xe) in coin_rows.items():
+        px(img, xs, y, gold_dk)
+        px(img, xe, y, gold_dk)
+    for x in range(4, 8):
+        px(img, x, 0, gold_dk)
+        px(img, x, 11, gold_vdk)
+
+    # Dragon "D" emblem in center
+    # D shape: vertical bar + curve
+    for y in range(3, 9):
+        px(img, 4, y, emblem)
+    px(img, 5, 3, emblem)
+    px(img, 6, 3, emblem)
+    px(img, 7, 4, emblem)
+    px(img, 7, 5, emblem)
+    px(img, 7, 6, emblem)
+    px(img, 7, 7, emblem)
+    px(img, 6, 8, emblem)
+    px(img, 5, 8, emblem)
+
+    # Specular shine (top-left)
+    px(img, 4, 1, shine)
+    px(img, 5, 1, shine)
+    px(img, 3, 2, shine)
+    px(img, 4, 2, gold_hi)
+    px(img, 3, 3, shine)
+
+    # Bottom-right shadow
+    px(img, 9, 8, gold_vdk)
+    px(img, 8, 9, gold_vdk)
+
+    add_outline(img)
+    save(img, "gold_coin.png")
+
+
+# ============================================================
+# 32. PICKUP: CHICKEN (14x14) - Roasted chicken drumstick heal
+# ============================================================
+def generate_pickup_chicken():
+    img = Image.new("RGBA", (14, 14), (0, 0, 0, 0))
+
+    meat_hi = (220, 170, 90, 255)
+    meat_lt = (200, 145, 70, 255)
+    meat = (180, 120, 50, 255)
+    meat_md = (155, 95, 35, 255)
+    meat_dk = (125, 70, 22, 255)
+    meat_vdk = (95, 48, 12, 255)
+    bone_hi = (255, 252, 245, 255)
+    bone = (240, 235, 220, 255)
+    bone_dk = (210, 200, 180, 255)
+    crispy = (165, 90, 30, 255)
+
+    # Meat body (rounded drumstick shape)
+    fill_rect(img, 3, 2, 9, 4, meat)
+    fill_rect(img, 2, 5, 10, 9, meat)
+    fill_rect(img, 3, 10, 9, 10, meat)
+    # Top curve
+    fill_rect(img, 4, 1, 8, 1, meat_lt)
+
+    # Highlight (top-left, golden-brown crispy)
+    fill_rect(img, 3, 2, 5, 4, meat_lt)
+    fill_rect(img, 2, 5, 4, 7, meat_lt)
+    fill_rect(img, 3, 2, 4, 3, meat_hi)
+    px(img, 4, 1, meat_hi)
+    dither_rect(img, 5, 2, 7, 4, meat_hi, meat_lt)
+
+    # Shadow (bottom-right)
+    fill_rect(img, 8, 7, 10, 9, meat_dk)
+    fill_rect(img, 9, 5, 10, 9, meat_vdk)
+    dither_rect(img, 6, 8, 9, 10, meat, meat_dk)
+
+    # Crispy skin marks
+    px(img, 5, 6, crispy)
+    px(img, 7, 4, crispy)
+    px(img, 4, 8, crispy)
+    px(img, 6, 7, crispy)
+
+    # Bite mark (dark notch on right side)
+    px(img, 10, 6, (0, 0, 0, 0))
+    px(img, 10, 7, (0, 0, 0, 0))
+
+    # Bone sticking out (bottom)
+    fill_rect(img, 5, 11, 7, 12, bone)
+    fill_rect(img, 5, 11, 6, 11, bone_hi)
+    px(img, 7, 12, bone_dk)
+    # Bone end (knob)
+    fill_rect(img, 5, 13, 8, 13, bone)
+    px(img, 5, 13, bone_hi)
+    px(img, 8, 13, bone_dk)
+
+    add_outline(img)
+    save(img, "pickup_chicken.png")
+
+
+# ============================================================
+# 33. PICKUP: MAGNET (14x14) - Horseshoe magnet vacuum
+# ============================================================
+def generate_pickup_magnet():
+    img = Image.new("RGBA", (14, 14), (0, 0, 0, 0))
+
+    red_hi = (240, 90, 80, 255)
+    red_lt = (220, 60, 50, 255)
+    red = (190, 35, 30, 255)
+    red_md = (160, 22, 20, 255)
+    red_dk = (120, 12, 10, 255)
+    silver_hi = (230, 235, 240, 255)
+    silver = (195, 200, 210, 255)
+    silver_dk = (155, 160, 170, 255)
+    silver_vdk = (115, 120, 130, 255)
+
+    # U-shape magnet
+    # Left arm of U
+    fill_rect(img, 1, 1, 4, 9, red)
+    fill_rect(img, 1, 1, 2, 5, red_lt)
+    fill_rect(img, 1, 1, 1, 3, red_hi)
+    fill_rect(img, 3, 6, 4, 9, red_dk)
+    dither_rect(img, 2, 5, 3, 7, red, red_dk)
+
+    # Right arm of U
+    fill_rect(img, 9, 1, 12, 9, red)
+    fill_rect(img, 9, 1, 10, 5, red_lt)
+    fill_rect(img, 9, 1, 9, 3, red_hi)
+    fill_rect(img, 11, 6, 12, 9, red_dk)
+    dither_rect(img, 10, 5, 11, 7, red, red_dk)
+
+    # Bottom curve connecting arms
+    fill_rect(img, 3, 9, 10, 12, red)
+    fill_rect(img, 5, 12, 8, 13, red_md)
+    # Curve highlight
+    fill_rect(img, 3, 9, 6, 10, red_lt)
+    fill_rect(img, 3, 9, 4, 9, red_hi)
+    # Curve shadow
+    fill_rect(img, 8, 11, 10, 12, red_dk)
+    fill_rect(img, 7, 13, 8, 13, red_dk)
+    dither_rect(img, 6, 11, 8, 12, red, red_dk)
+    # Inner hollow of the U
+    fill_rect(img, 5, 5, 8, 9, (0, 0, 0, 0))
+
+    # Silver tips (top of each arm)
+    fill_rect(img, 1, 0, 4, 1, silver)
+    fill_rect(img, 1, 0, 2, 0, silver_hi)
+    fill_rect(img, 3, 1, 4, 1, silver_dk)
+    fill_rect(img, 9, 0, 12, 1, silver)
+    fill_rect(img, 9, 0, 10, 0, silver_hi)
+    fill_rect(img, 11, 1, 12, 1, silver_dk)
+
+    # Magnetic force lines (subtle)
+    px(img, 6, 2, (200, 200, 255, 80))
+    px(img, 7, 3, (200, 200, 255, 80))
+    px(img, 6, 4, (200, 200, 255, 60))
+
+    add_outline(img)
+    save(img, "pickup_magnet.png")
+
+
+# ============================================================
+# 34. PICKUP: ROSARY (14x14) - Holy cross / rosary kill-all
+# ============================================================
+def generate_pickup_rosary():
+    img = Image.new("RGBA", (14, 14), (0, 0, 0, 0))
+
+    silver_hi = (245, 248, 255, 255)
+    silver_lt = (215, 220, 235, 255)
+    silver = (185, 190, 210, 255)
+    silver_md = (150, 155, 175, 255)
+    silver_dk = (110, 115, 135, 255)
+    silver_vdk = (75, 78, 95, 255)
+    chain = (170, 175, 190, 255)
+    chain_dk = (130, 135, 150, 255)
+    glow = (230, 230, 255, 80)
+
+    # Cross shape (centered)
+    # Vertical beam
+    fill_rect(img, 6, 1, 7, 11, silver)
+    # Horizontal beam
+    fill_rect(img, 3, 4, 10, 5, silver)
+
+    # Cross highlight (top-left light)
+    fill_rect(img, 6, 1, 6, 6, silver_lt)
+    px(img, 6, 1, silver_hi)
+    px(img, 6, 2, silver_hi)
+    fill_rect(img, 3, 4, 5, 4, silver_lt)
+    px(img, 3, 4, silver_hi)
+    dither_rect(img, 7, 1, 7, 4, silver_lt, silver)
+
+    # Cross shadow (right and bottom)
+    fill_rect(img, 7, 7, 7, 11, silver_md)
+    fill_rect(img, 8, 4, 10, 5, silver_md)
+    fill_rect(img, 9, 5, 10, 5, silver_dk)
+    px(img, 7, 11, silver_dk)
+    px(img, 7, 10, silver_md)
+
+    # Cross edge detail
+    px(img, 6, 11, silver_dk)
+    px(img, 7, 11, silver_vdk)
+
+    # Center gem (red)
+    px(img, 6, 4, (220, 50, 50, 255))
+    px(img, 7, 5, (180, 30, 30, 255))
+    px(img, 6, 5, (200, 40, 40, 255))
+    px(img, 7, 4, (200, 40, 40, 255))
+
+    # Chain circle (around the top of the cross)
+    chain_positions = [
+        (5, 0), (6, 0), (7, 0), (8, 0),
+        (4, 1), (9, 1),
+        (3, 2), (10, 2),
+        (3, 3), (10, 3),
+        (2, 4), (11, 4),
+        (2, 5), (11, 5),
+        (3, 6), (10, 6),
+    ]
+    for cx, cy in chain_positions:
+        if get_px(img, cx, cy)[3] == 0:
+            px(img, cx, cy, chain)
+    # Chain shadow side
+    for cx, cy in [(10, 2), (10, 3), (11, 4), (11, 5), (10, 6)]:
+        if get_px(img, cx, cy) == chain:
+            px(img, cx, cy, chain_dk)
+
+    # Holy glow
+    px(img, 5, 0, glow)
+    px(img, 8, 0, glow)
+    px(img, 1, 4, glow)
+    px(img, 12, 5, glow)
+    px(img, 5, 12, glow)
+    px(img, 8, 12, glow)
+
+    add_outline(img)
+    save(img, "pickup_rosary.png")
+
+
+# ============================================================
+# 35. PICKUP: HOURGLASS (14x14) - Time freeze hourglass
+# ============================================================
+def generate_pickup_hourglass():
+    img = Image.new("RGBA", (14, 14), (0, 0, 0, 0))
+
+    gold_hi = (255, 230, 100, 255)
+    gold_lt = (240, 210, 70, 255)
+    gold = (210, 175, 40, 255)
+    gold_dk = (170, 135, 25, 255)
+    gold_vdk = (130, 100, 15, 255)
+    glass_hi = (200, 230, 255, 200)
+    glass = (160, 200, 240, 180)
+    glass_dk = (120, 160, 210, 180)
+    sand_hi = (100, 180, 240, 255)
+    sand = (60, 140, 210, 255)
+    sand_dk = (35, 100, 170, 255)
+
+    # Top frame (gold bar)
+    fill_rect(img, 2, 0, 11, 1, gold)
+    fill_rect(img, 2, 0, 6, 0, gold_lt)
+    fill_rect(img, 2, 0, 4, 0, gold_hi)
+    fill_rect(img, 9, 1, 11, 1, gold_dk)
+
+    # Bottom frame (gold bar)
+    fill_rect(img, 2, 12, 11, 13, gold)
+    fill_rect(img, 2, 12, 6, 12, gold_lt)
+    fill_rect(img, 2, 12, 4, 12, gold_hi)
+    fill_rect(img, 9, 13, 11, 13, gold_dk)
+
+    # Frame pillars (thin sides)
+    fill_rect(img, 3, 1, 3, 12, gold_dk)
+    fill_rect(img, 10, 1, 10, 12, gold_vdk)
+
+    # Upper glass bulb
+    fill_rect(img, 4, 2, 9, 3, glass)
+    fill_rect(img, 5, 4, 8, 5, glass)
+    fill_rect(img, 6, 6, 7, 6, glass_dk)
+    # Upper bulb highlight
+    fill_rect(img, 4, 2, 6, 2, glass_hi)
+    px(img, 4, 2, (220, 240, 255, 220))
+    px(img, 5, 3, glass_hi)
+
+    # Lower glass bulb
+    fill_rect(img, 6, 7, 7, 7, glass_dk)
+    fill_rect(img, 5, 8, 8, 9, glass)
+    fill_rect(img, 4, 10, 9, 11, glass)
+    # Lower bulb highlight
+    px(img, 5, 8, glass_hi)
+    px(img, 4, 10, glass_hi)
+
+    # Sand in upper bulb (less, partially drained)
+    fill_rect(img, 5, 4, 8, 5, sand)
+    fill_rect(img, 5, 4, 6, 4, sand_hi)
+    px(img, 7, 5, sand_dk)
+    px(img, 8, 5, sand_dk)
+
+    # Sand stream (center narrow)
+    px(img, 6, 6, sand)
+    px(img, 7, 6, sand_dk)
+    px(img, 6, 7, sand)
+    px(img, 7, 7, sand_dk)
+
+    # Sand in lower bulb (more, accumulated)
+    fill_rect(img, 4, 10, 9, 11, sand)
+    fill_rect(img, 5, 9, 8, 9, sand)
+    # Sand highlight
+    fill_rect(img, 4, 10, 6, 10, sand_hi)
+    px(img, 4, 10, (120, 200, 250, 255))
+    # Sand shadow
+    fill_rect(img, 8, 11, 9, 11, sand_dk)
+    px(img, 9, 11, (25, 80, 145, 255))
+
+    # Frame corner decorations
+    px(img, 2, 0, gold_hi)
+    px(img, 11, 0, gold_dk)
+    px(img, 2, 13, gold_lt)
+    px(img, 11, 13, gold_vdk)
+
+    add_outline(img)
+    save(img, "pickup_hourglass.png")
+
+
+# ============================================================
 # MAIN - Generate all sprites
 # ============================================================
 def main():
@@ -2267,6 +3391,9 @@ def main():
     print("[Characters]")
     generate_knight()
     generate_archer()
+    generate_mage()
+    generate_berserker()
+    generate_thief()
 
     print("\n[Enemies]")
     generate_slime()
@@ -2287,6 +3414,11 @@ def main():
     print("\n[Pickups]")
     generate_xp_orb()
     generate_chest()
+    generate_gold_coin()
+    generate_pickup_chicken()
+    generate_pickup_magnet()
+    generate_pickup_rosary()
+    generate_pickup_hourglass()
 
     print("\n[Passive Items]")
     generate_passive_spinach()
@@ -2299,8 +3431,11 @@ def main():
     print("\n[Environment]")
     generate_rock()
     generate_cavern_floor()
+    generate_torch()
+    generate_barrel()
+    generate_crystal()
 
-    print(f"\nDone! Generated 24 sprites in {OUTPUT_DIR}")
+    print(f"\nDone! Generated 35 sprites in {OUTPUT_DIR}")
 
 
 if __name__ == "__main__":

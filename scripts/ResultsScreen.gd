@@ -80,7 +80,7 @@ func show_defeat():
 func _update_stats():
 	var minutes = int(GameState.game_time) / 60
 	var seconds = int(GameState.game_time) % 60
-	stats_label.text = "Time Survived: %02d:%02d\nLevel Reached: %d\nEnemies Killed: %d" % [minutes, seconds, GameState.player_level, GameState.enemies_killed]
+	stats_label.text = "Time Survived: %02d:%02d\nLevel Reached: %d\nEnemies Killed: %d\nGold Earned: %d\nTotal Gold: %d" % [minutes, seconds, GameState.player_level, GameState.enemies_killed, GameState.gold_collected, SaveData.gold]
 
 
 func _on_play_again():

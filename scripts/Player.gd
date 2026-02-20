@@ -32,6 +32,13 @@ signal player_died
 
 
 func _ready():
+	# Apply meta-progression permanent upgrades from SaveData
+	if SaveData:
+		max_hp *= (1.0 + SaveData.get_stat_bonus("max_hp_mult"))
+		move_speed *= (1.0 + SaveData.get_stat_bonus("move_speed_mult"))
+		armor += SaveData.get_stat_bonus("armor_flat")
+		base_magnet_range *= (1.0 + SaveData.get_stat_bonus("magnet_mult"))
+
 	# Store base stats before any passive bonuses are applied
 	base_move_speed = move_speed
 	base_max_hp = max_hp

@@ -18,7 +18,12 @@ func _ready():
 	current_hp = max_hp
 	contact_damage = 25.0
 	xp_value = 100.0
+	xp_tier = 4  # Diamond gem
 	chest_drop_chance = 1.0  # Always drops a chest
+	chest_tier = 3  # Gold chest
+	gold_drop_chance = 1.0
+	gold_min = 30
+	gold_max = 50
 	death_particle_color = Color(0.9, 0.35, 0.1)  # Orange/fire particles
 
 

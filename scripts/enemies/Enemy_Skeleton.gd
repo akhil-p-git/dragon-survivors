@@ -12,6 +12,9 @@ func _ready():
 	current_hp = max_hp
 	contact_damage = 12.0
 	xp_value = 5.0
+	xp_tier = 2  # Green gem
+	gold_min = 2
+	gold_max = 4
 	death_particle_color = Color(0.9, 0.9, 0.85)  # White/bone particles
 
 

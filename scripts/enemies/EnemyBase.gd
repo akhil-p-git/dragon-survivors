@@ -6,6 +6,7 @@ extends CharacterBody2D
 @export var xp_value: float = 3.0
 
 var chest_drop_chance: float = 0.0  # Override in subclasses
+var chest_tier: int = 1  # 1=Bronze, 2=Silver, 3=Gold
 var current_hp: float
 var is_alive: bool = true
 var player: CharacterBody2D
@@ -17,13 +18,41 @@ var death_particle_color: Color = Color(0.7, 0.7, 0.7)  # Override in subclasses
 var crit_chance: float = 0.10  # 10% base crit chance
 var crit_multiplier: float = 2.0  # Crits deal double damage
 
+# Elite enemy settings
+var is_elite: bool = false
+var base_move_speed: float = 0.0
+
+# Gold drop settings
+var gold_drop_chance: float = 0.20
+var gold_min: int = 1
+var gold_max: int = 3
+
+# XP gem tier (1=Blue, 2=Green, 3=Red, 4=Diamond)
+var xp_tier: int = 1
+
 
 func _ready():
 	current_hp = max_hp
+	base_move_speed = move_speed
 	add_to_group("enemies")
 	collision_layer = 2  # Enemies layer (Layer 2)
 	collision_mask = 33  # Player (1) + Rocks (32)
 	player = get_tree().current_scene.get_node_or_null("Player")
+	if is_elite:
+		_apply_elite()
+
+
+func _apply_elite():
+	max_hp *= 3.0
+	current_hp = max_hp
+	contact_damage *= 1.5
+	scale *= 1.5
+	xp_tier = max(xp_tier + 1, 3)
+	gold_drop_chance = 1.0
+	gold_min *= 2
+	gold_max *= 3
+	# Gold shimmer
+	modulate = Color(1.3, 1.0, 0.5, 1.0)
 
 
 func _physics_process(delta):
@@ -42,7 +71,11 @@ func _physics_process(delta):
 			var collision = get_slide_collision(i)
 			var collider = collision.get_collider()
 			if collider == player and player.is_alive:
-				player.take_damage(contact_damage)
+				var dmg = contact_damage
+				# Apply damage_taken_mult from arcana
+				if GameState.damage_taken_mult != 1.0:
+					dmg *= GameState.damage_taken_mult
+				player.take_damage(dmg)
 				damage_cooldown = damage_interval
 				break
 
@@ -56,6 +89,10 @@ func take_damage(amount: float):
 	current_hp -= final_damage
 	_show_damage_number(final_damage, is_crit)
 	_hit_flash(is_crit)
+	# Life steal from arcana
+	if GameState.life_steal > 0 and is_instance_valid(player) and player.is_alive:
+		var heal = final_damage * GameState.life_steal
+		player.heal(heal)
 	# Screen shake + hit stop on big hits (25+ damage) or crits
 	if final_damage >= 25.0 or is_crit:
 		ScreenEffects.shake(ScreenEffects.SHAKE_SMALL, 0.12)
@@ -70,6 +107,7 @@ func die():
 	# Register kill for multi-kill screen shake tracking
 	ScreenEffects.register_enemy_kill()
 	_drop_xp()
+	_maybe_drop_gold()
 	_maybe_drop_chest()
 	_spawn_death_particles()
 	_play_death_pop()
@@ -135,15 +173,32 @@ func _maybe_drop_chest():
 		var chest_scene = preload("res://scenes/pickups/Chest.tscn")
 		var chest = chest_scene.instantiate()
 		chest.global_position = global_position
+		chest.chest_tier = chest_tier
 		var pickups = get_tree().current_scene.get_node_or_null("Pickups")
 		if pickups:
 			pickups.add_child(chest)
+
+
+func _maybe_drop_gold():
+	if randf() < gold_drop_chance:
+		var GoldCoinScript = load("res://scripts/pickups/GoldCoin.gd")
+		var count = randi_range(gold_min, gold_max)
+		var pickups = get_tree().current_scene.get_node_or_null("Pickups")
+		if not pickups:
+			return
+		for i in range(count):
+			var coin = Area2D.new()
+			coin.set_script(GoldCoinScript)
+			coin.gold_value = 1
+			coin.global_position = global_position + Vector2(randf_range(-15, 15), randf_range(-15, 15))
+			pickups.add_child(coin)
 
 
 func _drop_xp():
 	var orb_scene = preload("res://scenes/pickups/XPOrb.tscn")
 	var orb = orb_scene.instantiate()
 	orb.global_position = global_position
+	orb.xp_tier = xp_tier
 	orb.xp_value = xp_value
 	var pickups = get_tree().current_scene.get_node_or_null("Pickups")
 	if pickups:

@@ -28,6 +28,9 @@ func get_damage() -> float:
 	# Apply passive damage multiplier from player (Spinach, etc.)
 	if is_instance_valid(player) and "passive_damage_multiplier" in player:
 		raw *= player.passive_damage_multiplier
+	# Apply meta-progression Might bonus
+	if SaveData:
+		raw *= (1.0 + SaveData.get_stat_bonus("damage_mult"))
 	return raw
 
 
@@ -37,6 +40,9 @@ func get_cooldown() -> float:
 	# Apply passive cooldown multiplier from player (Tome, etc.)
 	if is_instance_valid(player) and "passive_cooldown_multiplier" in player:
 		cd *= player.passive_cooldown_multiplier
+	# Apply meta-progression cooldown bonus
+	if SaveData:
+		cd *= (1.0 - SaveData.get_stat_bonus("cooldown_mult"))
 	return cd
 
 

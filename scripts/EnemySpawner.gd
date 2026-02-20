@@ -9,6 +9,14 @@ var base_spawn_interval: float = 2.0
 var min_spawn_interval: float = 0.3
 var spawn_distance: float = 700.0  # Spawn off-screen
 
+# Mini-boss tracking
+var mini_boss_spawned: Dictionary = {}  # time_key: bool
+var mini_boss_schedule: Array = [
+	{"time": 180.0, "type": "giant_slime"},   # 3 min
+	{"time": 360.0, "type": "skeleton_lord"},  # 6 min
+	{"time": 540.0, "type": "dark_knight"},    # 9 min
+]
+
 
 func _process(delta):
 	if not GameState.is_game_active:
@@ -20,6 +28,9 @@ func _process(delta):
 	if spawn_timer >= interval:
 		spawn_timer = 0.0
 		spawn_enemy()
+
+	# Check for mini-boss spawns
+	_check_mini_boss_spawns()
 
 
 func get_spawn_interval() -> float:
@@ -44,6 +55,11 @@ func spawn_enemy():
 	var enemy_scene = _pick_enemy_scene()
 	var enemy = enemy_scene.instantiate()
 	enemy.global_position = pos
+
+	# Elite chance: 10% after 5 minutes
+	if GameState.game_time >= 300.0 and randf() < 0.10:
+		enemy.is_elite = true
+
 	get_tree().current_scene.get_node("Enemies").add_child(enemy)
 
 
@@ -76,3 +92,44 @@ func _pick_enemy_scene() -> PackedScene:
 			return skeleton_scene
 		else:
 			return knight_scene
+
+
+func _check_mini_boss_spawns():
+	var player = get_tree().current_scene.get_node_or_null("Player")
+	if not player:
+		return
+
+	for boss_entry in mini_boss_schedule:
+		var time_key = str(boss_entry.time)
+		if mini_boss_spawned.get(time_key, false):
+			continue
+		if GameState.game_time >= boss_entry.time:
+			mini_boss_spawned[time_key] = true
+			_spawn_mini_boss(boss_entry.type, player)
+
+
+func _spawn_mini_boss(boss_type: String, player: CharacterBody2D):
+	var offset = Vector2(500, 0).rotated(randf() * TAU)
+	var pos = player.global_position + offset
+
+	var boss: CharacterBody2D
+	match boss_type:
+		"giant_slime":
+			var GiantSlimeScript = load("res://scripts/enemies/Enemy_GiantSlime.gd")
+			boss = _create_mini_boss_from_scene(slime_scene, GiantSlimeScript)
+		"skeleton_lord":
+			var SkeletonLordScript = load("res://scripts/enemies/Enemy_SkeletonLord.gd")
+			boss = _create_mini_boss_from_scene(skeleton_scene, SkeletonLordScript)
+		"dark_knight":
+			var DarkKnightScript = load("res://scripts/enemies/Enemy_DarkKnightCommander.gd")
+			boss = _create_mini_boss_from_scene(knight_scene, DarkKnightScript)
+
+	if boss:
+		boss.global_position = pos
+		get_tree().current_scene.get_node("Enemies").add_child(boss)
+
+
+func _create_mini_boss_from_scene(base_scene: PackedScene, script: GDScript) -> CharacterBody2D:
+	var enemy = base_scene.instantiate()
+	enemy.set_script(script)
+	return enemy

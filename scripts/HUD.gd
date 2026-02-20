@@ -9,6 +9,7 @@ var level_label: Label
 var timer_label: Label
 var kill_label: Label
 var weapon_container: HBoxContainer
+var gold_label: Label
 
 # Cached weapon manager reference for polling weapon data
 var _weapon_manager: Node = null
@@ -24,6 +25,7 @@ func _ready():
 
 func _process(_delta):
 	_update_kill_count()
+	_update_gold_count()
 	_refresh_weapons()
 
 
@@ -71,6 +73,11 @@ func set_player_ref(player: CharacterBody2D):
 func _update_kill_count():
 	if kill_label:
 		kill_label.text = "Kills: %d" % GameState.enemies_killed
+
+
+func _update_gold_count():
+	if gold_label:
+		gold_label.text = "%d" % GameState.gold_collected
 
 
 # ---------------------------------------------------------------------------
@@ -173,6 +180,16 @@ func _weapon_sprite_path(wname: String) -> String:
 		"Fireball": return "res://assets/sprites/fireball.png"
 		"Spinning Shield": return "res://assets/sprites/shield.png"
 		"Lightning Strike": return "res://assets/sprites/lightning.png"
+		"Orbiting Orbs": return "res://assets/sprites/orbit_projectile.png"
+		"Aura": return "res://assets/sprites/aura.png"
+		# Evolved weapons use the base sprite
+		"Dragon Cleaver": return "res://assets/sprites/sword_arc.png"
+		"Storm of Arrows": return "res://assets/sprites/arrow.png"
+		"Inferno": return "res://assets/sprites/fireball.png"
+		"Fortress": return "res://assets/sprites/shield.png"
+		"Thunder Storm": return "res://assets/sprites/lightning.png"
+		"Celestial Barrage": return "res://assets/sprites/orbit_projectile.png"
+		"Tempest Aura": return "res://assets/sprites/aura.png"
 	return ""
 
 
@@ -183,6 +200,16 @@ func _weapon_border_color(wname: String) -> Color:
 		"Fireball": return Color.ORANGE_RED
 		"Spinning Shield": return Color.SILVER
 		"Lightning Strike": return Color.LIGHT_BLUE
+		"Orbiting Orbs": return Color.DODGER_BLUE
+		"Aura": return Color.MEDIUM_SEA_GREEN
+		# Evolved weapons get purple/gold borders
+		"Dragon Cleaver": return Color(1.0, 0.5, 0.2)
+		"Storm of Arrows": return Color(0.5, 1.0, 0.5)
+		"Inferno": return Color(1.0, 0.4, 0.0)
+		"Fortress": return Color(1.0, 0.85, 0.3)
+		"Thunder Storm": return Color(0.6, 0.4, 1.0)
+		"Celestial Barrage": return Color(0.6, 0.8, 1.0)
+		"Tempest Aura": return Color(0.4, 0.8, 1.0)
 	return Color.WHITE
 
 
@@ -382,6 +409,41 @@ func _build_ui():
 	kill_label.add_theme_constant_override("shadow_offset_y", 1)
 	kill_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	kill_panel.add_child(kill_label)
+
+	# Gold display
+	var gold_panel = PanelContainer.new()
+	gold_panel.size_flags_horizontal = Control.SIZE_SHRINK_END
+	var gold_style = StyleBoxFlat.new()
+	gold_style.bg_color = Color(0.0, 0.0, 0.0, 0.5)
+	gold_style.corner_radius_top_left = 6
+	gold_style.corner_radius_top_right = 6
+	gold_style.corner_radius_bottom_left = 6
+	gold_style.corner_radius_bottom_right = 6
+	gold_style.content_margin_left = 12
+	gold_style.content_margin_right = 12
+	gold_style.content_margin_top = 6
+	gold_style.content_margin_bottom = 6
+	gold_panel.add_theme_stylebox_override("panel", gold_style)
+	right_col.add_child(gold_panel)
+
+	var gold_hbox = HBoxContainer.new()
+	gold_hbox.add_theme_constant_override("separation", 6)
+	gold_panel.add_child(gold_hbox)
+
+	var gold_icon = Label.new()
+	gold_icon.text = "G"
+	gold_icon.add_theme_font_size_override("font_size", 18)
+	gold_icon.add_theme_color_override("font_color", Color(1.0, 0.85, 0.0))
+	gold_hbox.add_child(gold_icon)
+
+	gold_label = Label.new()
+	gold_label.text = "0"
+	gold_label.add_theme_font_size_override("font_size", 18)
+	gold_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.5))
+	gold_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
+	gold_label.add_theme_constant_override("shadow_offset_x", 1)
+	gold_label.add_theme_constant_override("shadow_offset_y", 1)
+	gold_hbox.add_child(gold_label)
 
 	# ========== SPACER (pushes weapon bar to bottom) ==========
 	var spacer = Control.new()

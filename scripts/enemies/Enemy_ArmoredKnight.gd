@@ -14,6 +14,10 @@ func _ready():
 	current_hp = max_hp
 	contact_damage = 20.0
 	xp_value = 10.0
+	xp_tier = 2  # Green gem
+	gold_min = 3
+	gold_max = 6
+	gold_drop_chance = 0.35
 	death_particle_color = Color(0.55, 0.55, 0.6)  # Steel/gray particles
 
 

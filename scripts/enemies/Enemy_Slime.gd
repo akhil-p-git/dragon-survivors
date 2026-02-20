@@ -15,6 +15,9 @@ func _ready():
 	current_hp = max_hp
 	contact_damage = 8.0
 	xp_value = 2.0
+	xp_tier = 1  # Blue gem
+	gold_min = 1
+	gold_max = 2
 	hop_timer = randf_range(0.0, 0.5)  # Stagger first hop
 	death_particle_color = Color(0.3, 0.85, 0.25)  # Green particles
 

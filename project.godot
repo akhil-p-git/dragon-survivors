@@ -12,6 +12,7 @@ config/features=PackedStringArray("4.6", "Forward Plus")
 
 [autoload]
 
+SaveData="*res://scripts/SaveData.gd"
 GameState="*res://scripts/GameState.gd"
 ScreenEffects="*res://scripts/ScreenEffects.gd"
 

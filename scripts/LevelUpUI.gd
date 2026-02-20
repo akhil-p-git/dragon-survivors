@@ -35,6 +35,8 @@ var current_offers: Array = []
 var _bg_overlay: ColorRect
 var _title_label: Label
 var _center_vbox: VBoxContainer
+var _buttons_container: HBoxContainer
+var _banish_mode: bool = false
 
 signal upgrade_selected
 
@@ -51,7 +53,7 @@ func _ready():
 	_bg_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(_bg_overlay)
 
-	# Center container for title + cards
+	# Center container for title + cards + buttons
 	_center_vbox = VBoxContainer.new()
 	_center_vbox.set_anchors_preset(Control.PRESET_CENTER)
 	_center_vbox.anchor_left = 0.5
@@ -59,9 +61,9 @@ func _ready():
 	_center_vbox.anchor_right = 0.5
 	_center_vbox.anchor_bottom = 0.5
 	_center_vbox.offset_left = -420
-	_center_vbox.offset_top = -260
+	_center_vbox.offset_top = -290
 	_center_vbox.offset_right = 420
-	_center_vbox.offset_bottom = 260
+	_center_vbox.offset_bottom = 290
 	_center_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	add_child(_center_vbox)
 
@@ -86,9 +88,21 @@ func _ready():
 	cards_container.add_theme_constant_override("separation", 20)
 	_center_vbox.add_child(cards_container)
 
+	# Spacer before buttons
+	var btn_spacer = Control.new()
+	btn_spacer.custom_minimum_size = Vector2(0, 16)
+	_center_vbox.add_child(btn_spacer)
+
+	# Reroll / Skip / Banish buttons
+	_buttons_container = HBoxContainer.new()
+	_buttons_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	_buttons_container.add_theme_constant_override("separation", 16)
+	_center_vbox.add_child(_buttons_container)
+
 
 func show_choices():
 	visible = true
+	_banish_mode = false
 	get_tree().paused = true
 
 	# Clear old cards
@@ -103,8 +117,91 @@ func show_choices():
 		var card = _create_card(offer, i)
 		cards_container.add_child(card)
 
+	# Build action buttons
+	_build_action_buttons()
+
 	# Animate everything in
 	_animate_entrance()
+
+
+func _build_action_buttons():
+	for child in _buttons_container.get_children():
+		child.queue_free()
+
+	# Reroll button
+	var reroll_btn = _create_action_button(
+		"Reroll (%d)" % GameState.reroll_charges,
+		Color(0.3, 0.6, 1.0),
+		GameState.reroll_charges > 0,
+		_on_reroll_pressed
+	)
+	_buttons_container.add_child(reroll_btn)
+
+	# Skip button
+	var skip_btn = _create_action_button(
+		"Skip (%d)" % GameState.skip_charges,
+		Color(0.8, 0.8, 0.3),
+		GameState.skip_charges > 0,
+		_on_skip_pressed
+	)
+	_buttons_container.add_child(skip_btn)
+
+	# Banish button
+	var banish_btn = _create_action_button(
+		"Banish (%d)" % GameState.banish_charges,
+		Color(1.0, 0.3, 0.3),
+		GameState.banish_charges > 0,
+		_on_banish_pressed
+	)
+	_buttons_container.add_child(banish_btn)
+
+
+func _create_action_button(text: String, color: Color, enabled: bool, callback: Callable) -> Button:
+	var btn = Button.new()
+	btn.text = text
+	btn.custom_minimum_size = Vector2(140, 40)
+	var style = StyleBoxFlat.new()
+	style.bg_color = color.darkened(0.5) if enabled else Color(0.2, 0.2, 0.2, 0.5)
+	style.corner_radius_top_left = 8
+	style.corner_radius_top_right = 8
+	style.corner_radius_bottom_left = 8
+	style.corner_radius_bottom_right = 8
+	style.content_margin_left = 12
+	style.content_margin_right = 12
+	style.content_margin_top = 8
+	style.content_margin_bottom = 8
+	btn.add_theme_stylebox_override("normal", style)
+	var hover_style = style.duplicate()
+	hover_style.bg_color = color.darkened(0.3) if enabled else Color(0.2, 0.2, 0.2, 0.5)
+	btn.add_theme_stylebox_override("hover", hover_style)
+	btn.add_theme_font_size_override("font_size", 14)
+	btn.add_theme_color_override("font_color", Color.WHITE if enabled else Color(0.5, 0.5, 0.5))
+	btn.disabled = not enabled
+	if enabled:
+		btn.pressed.connect(callback)
+	return btn
+
+
+func _on_reroll_pressed():
+	if GameState.reroll_charges <= 0:
+		return
+	GameState.reroll_charges -= 1
+	show_choices()
+
+
+func _on_skip_pressed():
+	if GameState.skip_charges <= 0:
+		return
+	GameState.skip_charges -= 1
+	_animate_exit()
+
+
+func _on_banish_pressed():
+	if GameState.banish_charges <= 0:
+		return
+	_banish_mode = true
+	_title_label.text = "CLICK TO BANISH"
+	_title_label.add_theme_color_override("font_color", Color.RED)
 
 
 func _animate_entrance():
@@ -152,7 +249,7 @@ func _generate_offers(count: int) -> Array:
 	# Add weapon upgrades for owned weapons
 	if weapon_manager:
 		for w in weapon_manager.weapons:
-			if w.level < w.max_level:
+			if w.level < w.max_level and not w.weapon_name in GameState.banished_items:
 				var next_level = w.level + 1
 				var upgrade_desc = _get_weapon_upgrade_description(w.weapon_name, next_level)
 				pool.append({
@@ -167,7 +264,7 @@ func _generate_offers(count: int) -> Array:
 	# Add new weapons
 	if weapon_manager and weapon_manager.weapons.size() < weapon_manager.max_weapons:
 		for aw in available_weapons:
-			if not weapon_manager.has_weapon(aw.name):
+			if not weapon_manager.has_weapon(aw.name) and not aw.name in GameState.banished_items:
 				pool.append({
 					"type": "new_weapon",
 					"name": aw.name,
@@ -177,6 +274,8 @@ func _generate_offers(count: int) -> Array:
 
 	# Add buffs (legacy simple buffs)
 	for b in available_buffs:
+		if b.name in GameState.banished_items:
+			continue
 		var current_level = GameState.buffs.get(b.stat, 0)
 		if current_level < 5:
 			pool.append({
@@ -194,7 +293,10 @@ func _generate_offers(count: int) -> Array:
 	var passive_manager = player.get_node_or_null("PassiveItemManager") if player else null
 	if passive_manager:
 		var passive_upgrades = passive_manager.get_available_upgrades()
-		pool.append_array(passive_upgrades)
+		# Filter banished
+		for pu in passive_upgrades:
+			if not pu.name in GameState.banished_items:
+				pool.append(pu)
 
 	pool.shuffle()
 	for i in range(min(count, pool.size())):
@@ -344,8 +446,6 @@ func _create_card(offer: Dictionary, index: int) -> PanelContainer:
 
 		var max_pips = offer.get("max_level", 5)
 		var current_level = offer.get("level", 1)
-		# For upgrades, the level shown is what it will become after picking this
-		# So filled pips = current_level (the level after upgrade)
 		for pip_i in range(max_pips):
 			var pip = ColorRect.new()
 			pip.custom_minimum_size = Vector2(14, 6)
@@ -356,7 +456,6 @@ func _create_card(offer: Dictionary, index: int) -> PanelContainer:
 				pip.color = Color(0.3, 0.3, 0.4, 0.6)
 			level_container.add_child(pip)
 
-		# Level text beside pips
 		var lvl_text = Label.new()
 		lvl_text.text = " Lv.%d" % current_level
 		lvl_text.add_theme_font_size_override("font_size", 13)
@@ -374,7 +473,7 @@ func _create_card(offer: Dictionary, index: int) -> PanelContainer:
 	desc_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(desc_label)
 
-	# --- Bottom spacer to push content up a bit ---
+	# --- Bottom spacer ---
 	var bottom_spacer = Control.new()
 	bottom_spacer.custom_minimum_size = Vector2(0, 4)
 	bottom_spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -384,15 +483,12 @@ func _create_card(offer: Dictionary, index: int) -> PanelContainer:
 
 
 func _add_icon_to_container(container: CenterContainer, offer: Dictionary):
-	# Try to load a sprite texture
 	var sprite_path = ""
-
 	if offer.type == "passive_item":
 		var sprite_name = offer.name.to_lower().replace(" ", "_")
 		sprite_path = "res://assets/sprites/passive_%s.png" % sprite_name
 	elif offer.type in ["new_weapon", "weapon_upgrade"]:
 		sprite_path = _weapon_sprite_map.get(offer.name, "")
-
 	if sprite_path != "" and ResourceLoader.exists(sprite_path):
 		var tex_rect = TextureRect.new()
 		tex_rect.texture = load(sprite_path)
@@ -402,7 +498,6 @@ func _add_icon_to_container(container: CenterContainer, offer: Dictionary):
 		tex_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		container.add_child(tex_rect)
 	else:
-		# Fallback: colored rect icon
 		var icon = ColorRect.new()
 		icon.color = offer.get("icon_color", Color.WHITE)
 		icon.custom_minimum_size = Vector2(48, 48)
@@ -424,8 +519,6 @@ func _get_type_tag_color(type: String, is_new: bool = false) -> Color:
 
 func _on_card_hover_enter(card: PanelContainer):
 	var border_color: Color = card.get_meta("border_color")
-
-	# Brighten border and background on hover
 	var hover_style = StyleBoxFlat.new()
 	hover_style.bg_color = Color(0.18, 0.18, 0.32, 0.98)
 	hover_style.corner_radius_top_left = 12
@@ -441,12 +534,9 @@ func _on_card_hover_enter(card: PanelContainer):
 	hover_style.content_margin_right = 15
 	hover_style.content_margin_top = 15
 	hover_style.content_margin_bottom = 15
-	# Subtle glow via shadow
 	hover_style.shadow_color = Color(border_color.r, border_color.g, border_color.b, 0.3)
 	hover_style.shadow_size = 8
 	card.add_theme_stylebox_override("panel", hover_style)
-
-	# Scale up slightly
 	var tween = create_tween()
 	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	tween.set_ease(Tween.EASE_OUT)
@@ -455,11 +545,8 @@ func _on_card_hover_enter(card: PanelContainer):
 
 
 func _on_card_hover_exit(card: PanelContainer):
-	# Restore base style
 	var base_style: StyleBoxFlat = card.get_meta("base_style")
 	card.add_theme_stylebox_override("panel", base_style)
-
-	# Scale back to normal
 	var tween = create_tween()
 	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	tween.set_ease(Tween.EASE_OUT)
@@ -469,6 +556,16 @@ func _on_card_hover_exit(card: PanelContainer):
 
 func _on_card_selected(index: int):
 	if index < 0 or index >= current_offers.size():
+		return
+
+	# Banish mode: remove item from pool instead of selecting
+	if _banish_mode:
+		GameState.banish_charges -= 1
+		var offer = current_offers[index]
+		GameState.banished_items.append(offer.name)
+		_banish_mode = false
+		# Regenerate offers without the banished item
+		show_choices()
 		return
 
 	var offer = current_offers[index]
@@ -505,6 +602,9 @@ func _animate_exit():
 	tween.tween_callback(func():
 		visible = false
 		get_tree().paused = false
+		# Reset title
+		_title_label.text = "LEVEL UP!"
+		_title_label.add_theme_color_override("font_color", Color.GOLD)
 		emit_signal("upgrade_selected")
 	)
 
@@ -512,7 +612,6 @@ func _animate_exit():
 func _add_new_weapon(weapon_manager, weapon_name: String):
 	for aw in available_weapons:
 		if aw.name == weapon_name:
-			# Load the weapon script and create instance
 			var script = load(aw.script)
 			var weapon = Node.new()
 			weapon.set_script(script)
@@ -528,7 +627,6 @@ func _apply_buff(player, offer: Dictionary):
 
 	match stat:
 		"attack_speed":
-			# Apply to all weapons
 			var wm = player.get_node_or_null("WeaponManager")
 			if wm:
 				for w in wm.weapons:
@@ -543,12 +641,10 @@ func _apply_buff(player, offer: Dictionary):
 			player.move_speed += value
 		"pickup_range":
 			player.pickup_range += value
-			# Update pickup area collision shape
 			var pickup_area = player.get_node_or_null("PickupArea/PickupShape")
 			if pickup_area and pickup_area.shape is CircleShape2D:
 				pickup_area.shape.radius = player.pickup_range
 		"life_steal":
-			# Store in GameState, apply in damage dealing
 			pass
 
 

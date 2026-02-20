@@ -1,6 +1,8 @@
 extends Area2D
 
-var xp_value: float = 2.0
+## XP gem tiers: 1=Blue(1xp), 2=Green(5xp), 3=Red(25xp), 4=Diamond(100xp)
+var xp_tier: int = 1
+var xp_value: float = 2.0  # Legacy default, overridden by tier
 var attract_speed: float = 300.0
 var is_attracted: bool = false
 var is_magnetized: bool = false
@@ -13,12 +15,35 @@ const MAGNET_ACCELERATION: float = 300.0
 const MAGNET_MAX_SPEED: float = 250.0
 const ATTRACT_ACCELERATION: float = 400.0
 
+# Tier data: { xp, color, scale }
+const TIER_DATA = {
+	1: {"xp": 1.0, "color": Color(0.3, 0.5, 1.0), "gem_scale": 1.0},       # Blue
+	2: {"xp": 5.0, "color": Color(0.2, 0.9, 0.3), "gem_scale": 1.2},       # Green
+	3: {"xp": 25.0, "color": Color(1.0, 0.2, 0.2), "gem_scale": 1.5},      # Red
+	4: {"xp": 100.0, "color": Color(0.9, 0.9, 1.0), "gem_scale": 2.0},     # Diamond
+}
+
 
 func _ready():
-	collision_layer = 16  # Pickups layer (layer 5)
+	collision_layer = 16  # Pickups layer
 	collision_mask = 1    # Detect Player
 	add_to_group("xp_orbs")
 	area_entered.connect(_on_area_entered)
+	# Apply tier data
+	_apply_tier()
+
+
+func _apply_tier():
+	var data = TIER_DATA.get(xp_tier, TIER_DATA[1])
+	xp_value = data.xp
+	# Tint the sprite
+	var body = get_node_or_null("Body")
+	if body:
+		body.modulate = data.color
+		body.scale *= data.gem_scale
+	else:
+		modulate = data.color
+		scale *= data.gem_scale
 
 
 func _physics_process(delta):
