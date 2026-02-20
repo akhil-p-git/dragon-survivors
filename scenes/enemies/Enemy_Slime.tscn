@@ -1,0 +1,20 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/Enemy_Slime.gd" id="1_slme"]
+[ext_resource type="Texture2D" uid="uid://b8rwn7ibbweb6" path="res://assets/sprites/slime.png" id="2_tex"]
+
+[sub_resource type="CircleShape2D" id="SubResource_1"]
+radius = 22.0
+
+[node name="Enemy_Slime" type="CharacterBody2D"]
+script = ExtResource("1_slme")
+collision_layer = 2
+collision_mask = 1
+
+[node name="Body" type="Sprite2D" parent="."]
+texture_filter = 1
+texture = ExtResource("2_tex")
+scale = Vector2(1.6, 1.6)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("SubResource_1")

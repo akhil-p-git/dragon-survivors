@@ -1,0 +1,29 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/Player.gd" id="1_p1scr"]
+[ext_resource type="Texture2D" uid="uid://dwoc1sap1d4he" path="res://assets/sprites/knight.png" id="2_tex"]
+
+[sub_resource type="RectangleShape2D" id="SubResource_1"]
+size = Vector2(28, 44)
+
+[sub_resource type="CircleShape2D" id="SubResource_2"]
+radius = 100.0
+
+[node name="Player_Knight" type="CharacterBody2D"]
+script = ExtResource("1_p1scr")
+move_speed = 300.0
+max_hp = 100.0
+armor = 2.0
+pickup_range = 100.0
+
+[node name="Body" type="Sprite2D" parent="."]
+texture_filter = 1
+texture = ExtResource("2_tex")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("SubResource_1")
+
+[node name="PickupArea" type="Area2D" parent="."]
+
+[node name="PickupShape" type="CollisionShape2D" parent="PickupArea"]
+shape = SubResource("SubResource_2")
