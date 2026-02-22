@@ -15,6 +15,10 @@ var damage_interval: float = 0.5  # Contact damage every 0.5s
 var death_particle_color: Color = Color(0.7, 0.7, 0.7)  # Override in subclasses
 
 # Critical hit settings
+# Preloaded resources (avoid load() on every death)
+var _DeathParticlesScript: GDScript = preload("res://scripts/enemies/DeathParticles.gd")
+var _GoldCoinScript: GDScript = preload("res://scripts/pickups/GoldCoin.gd")
+
 var crit_chance: float = 0.10  # 10% base crit chance
 var crit_multiplier: float = 2.0  # Crits deal double damage
 
@@ -31,23 +35,24 @@ var gold_max: int = 3
 var xp_tier: int = 1
 
 
-func _ready():
+func _ready() -> void:
 	current_hp = max_hp
 	base_move_speed = move_speed
 	add_to_group("enemies")
 	collision_layer = 2  # Enemies layer (Layer 2)
 	collision_mask = 33  # Player (1) + Rocks (32)
 	player = get_tree().current_scene.get_node_or_null("Player")
+	# Elite is applied deferred so subclass _ready() can set stats first
 	if is_elite:
-		_apply_elite()
+		call_deferred("_apply_elite")
 
 
-func _apply_elite():
+func _apply_elite() -> void:
 	max_hp *= 2.5
 	current_hp = max_hp
 	contact_damage *= 1.4
 	scale *= 1.5
-	xp_tier = max(xp_tier + 1, 3)
+	xp_tier = min(xp_tier + 1, 3)
 	gold_drop_chance = 1.0
 	gold_min *= 2
 	gold_max *= 3
@@ -55,23 +60,23 @@ func _apply_elite():
 	modulate = Color(1.3, 1.0, 0.5, 1.0)
 
 
-func _physics_process(delta):
+func _physics_process(delta: float) -> void:
 	if not is_alive or not is_instance_valid(player):
 		return
 
 	# Chase player
-	var direction = (player.global_position - global_position).normalized()
+	var direction: Vector2 = (player.global_position - global_position).normalized()
 	velocity = direction * move_speed
 	move_and_slide()
 
 	# Contact damage
 	damage_cooldown -= delta
 	if damage_cooldown <= 0:
-		for i in get_slide_collision_count():
-			var collision = get_slide_collision(i)
-			var collider = collision.get_collider()
+		for i: int in get_slide_collision_count():
+			var collision: KinematicCollision2D = get_slide_collision(i)
+			var collider: Object = collision.get_collider()
 			if collider == player and player.is_alive:
-				var dmg = contact_damage
+				var dmg: float = contact_damage
 				# Apply damage_taken_mult from arcana
 				if GameState.damage_taken_mult != 1.0:
 					dmg *= GameState.damage_taken_mult
@@ -80,18 +85,18 @@ func _physics_process(delta):
 				break
 
 
-func take_damage(amount: float):
+func take_damage(amount: float) -> void:
 	if not is_alive:
 		return
 	# Roll for critical hit
-	var is_crit = randf() < crit_chance
-	var final_damage = amount * crit_multiplier if is_crit else amount
+	var is_crit: bool = randf() < crit_chance
+	var final_damage: float = amount * crit_multiplier if is_crit else amount
 	current_hp -= final_damage
 	_show_damage_number(final_damage, is_crit)
 	_hit_flash(is_crit)
 	# Life steal from arcana
 	if GameState.life_steal > 0 and is_instance_valid(player) and player.is_alive:
-		var heal = final_damage * GameState.life_steal
+		var heal: float = final_damage * GameState.life_steal
 		player.heal(heal)
 	# Screen shake + hit stop on big hits (25+ damage) or crits
 	if final_damage >= 25.0 or is_crit:
@@ -101,35 +106,48 @@ func take_damage(amount: float):
 		die()
 
 
-func die():
+func die() -> void:
 	is_alive = false
 	GameState.enemies_killed += 1
 	# Register kill for multi-kill screen shake tracking
 	ScreenEffects.register_enemy_kill()
+	_on_die()  # Virtual hook for subclass behavior (shake, split, boss signals, etc.)
 	_drop_xp()
 	_maybe_drop_gold()
 	_maybe_drop_chest()
 	_spawn_death_particles()
+	_death_animation()
+
+
+## Override in subclasses for extra die behavior (screen shake, splitting, signals).
+func _on_die() -> void:
+	pass
+
+
+## Override in subclasses for custom death animations (e.g. Dragon boss).
+## Default is the pop-and-free animation.
+func _death_animation() -> void:
 	_play_death_pop()
 
 
 ## Brief white flash on the Body sprite when hit.
 ## Uses the sprite's modulate so it does not conflict with the node's own modulate.
-func _hit_flash(is_crit: bool = false):
-	var body = get_node_or_null("Body")
+func _hit_flash(is_crit: bool = false) -> void:
+	var body: Node2D = get_node_or_null("Body")
 	if not body:
 		# Fallback: modulate the whole node like before
+		var original_modulate: Color = modulate
 		modulate = Color(4.0, 4.0, 0.5, 1.0) if is_crit else Color.RED
 		get_tree().create_timer(0.08).timeout.connect(func():
-			if is_instance_valid(self): modulate = Color.WHITE
+			if is_instance_valid(self): modulate = original_modulate
 		)
 		return
 
 	if is_crit:
 		# Crits: bright yellow-white flash + scale punch on the sprite
 		body.modulate = Color(4.0, 4.0, 1.5, 1.0)
-		var base_scale = body.scale
-		var punch_tween = create_tween()
+		var base_scale: Vector2 = body.scale
+		var punch_tween: Tween = create_tween()
 		punch_tween.tween_property(body, "scale", base_scale * 1.3, 0.04)
 		punch_tween.tween_property(body, "scale", base_scale, 0.06)
 	else:
@@ -142,18 +160,17 @@ func _hit_flash(is_crit: bool = false):
 	)
 
 
-func _spawn_death_particles():
-	var DeathParticlesScript = load("res://scripts/enemies/DeathParticles.gd")
-	var particles = Node2D.new()
-	particles.set_script(DeathParticlesScript)
+func _spawn_death_particles() -> void:
+	var particles: Node2D = Node2D.new()
+	particles.set_script(_DeathParticlesScript)
 	particles.particle_color = death_particle_color
 	particles.global_position = global_position
 	get_tree().current_scene.add_child(particles)
 
 
-func _play_death_pop():
+func _play_death_pop() -> void:
 	# Quick "pop" scale effect on the Body sprite before freeing
-	var body = get_node_or_null("Body")
+	var body: Node2D = get_node_or_null("Body")
 	if not body:
 		queue_free()
 		return
@@ -162,60 +179,59 @@ func _play_death_pop():
 	collision_layer = 0
 	collision_mask = 0
 	# Pop: scale up briefly, then shrink to zero and free
-	var tween = create_tween()
+	var tween: Tween = create_tween()
 	tween.tween_property(body, "scale", body.scale * 1.4, 0.06).set_ease(Tween.EASE_OUT)
 	tween.tween_property(body, "scale", Vector2.ZERO, 0.1).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_BACK)
 	tween.tween_callback(queue_free)
 
 
-func _maybe_drop_chest():
+func _maybe_drop_chest() -> void:
 	if randf() < chest_drop_chance:
-		var chest_scene = preload("res://scenes/pickups/Chest.tscn")
-		var chest = chest_scene.instantiate()
+		var chest_scene: PackedScene = preload("res://scenes/pickups/Chest.tscn")
+		var chest: Node = chest_scene.instantiate()
 		chest.global_position = global_position
 		chest.chest_tier = chest_tier
-		var pickups = get_tree().current_scene.get_node_or_null("Pickups")
+		var pickups: Node = get_tree().current_scene.get_node_or_null("Pickups")
 		if pickups:
 			pickups.add_child(chest)
 
 
-func _maybe_drop_gold():
+func _maybe_drop_gold() -> void:
 	if randf() < gold_drop_chance:
-		var GoldCoinScript = load("res://scripts/pickups/GoldCoin.gd")
-		var count = randi_range(gold_min, gold_max)
-		var pickups = get_tree().current_scene.get_node_or_null("Pickups")
+		var count: int = randi_range(gold_min, gold_max)
+		var pickups: Node = get_tree().current_scene.get_node_or_null("Pickups")
 		if not pickups:
 			return
-		for i in range(count):
-			var coin = Area2D.new()
-			coin.set_script(GoldCoinScript)
+		for i: int in range(count):
+			var coin: Area2D = Area2D.new()
+			coin.set_script(_GoldCoinScript)
 			coin.gold_value = 1
 			coin.global_position = global_position + Vector2(randf_range(-15, 15), randf_range(-15, 15))
 			pickups.add_child(coin)
 
 
-func _drop_xp():
-	var orb_scene = preload("res://scenes/pickups/XPOrb.tscn")
-	var orb = orb_scene.instantiate()
+func _drop_xp() -> void:
+	var orb_scene: PackedScene = preload("res://scenes/pickups/XPOrb.tscn")
+	var orb: Node = orb_scene.instantiate()
 	orb.global_position = global_position
 	orb.xp_tier = xp_tier
 	orb.xp_value = xp_value
-	var pickups = get_tree().current_scene.get_node_or_null("Pickups")
+	var pickups: Node = get_tree().current_scene.get_node_or_null("Pickups")
 	if pickups:
 		pickups.add_child(orb)
 	else:
 		GameState.add_xp(xp_value)  # Fallback
 
 
-func _show_damage_number(amount: float, is_crit: bool = false):
-	var label = Label.new()
+func _show_damage_number(amount: float, is_crit: bool = false) -> void:
+	var label: Label = Label.new()
 	label.text = str(int(amount))
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.z_index = 100
 
 	# Random offset so numbers don't stack
-	var offset_x = randf_range(-18, 18)
-	var offset_y = randf_range(-35, -25)
+	var offset_x: float = randf_range(-18, 18)
+	var offset_y: float = randf_range(-35, -25)
 
 	if is_crit:
 		# Critical hit: yellow, larger font, bolder
@@ -238,9 +254,9 @@ func _show_damage_number(amount: float, is_crit: bool = false):
 	get_tree().current_scene.add_child(label)
 
 	# Float up and fade out
-	var duration = 0.7 if is_crit else 0.6
-	var float_distance = 50.0 if is_crit else 40.0
-	var tween = label.create_tween()
+	var duration: float = 0.7 if is_crit else 0.6
+	var float_distance: float = 50.0 if is_crit else 40.0
+	var tween: Tween = label.create_tween()
 	tween.set_parallel(true)
 	tween.tween_property(label, "position:y", label.position.y - float_distance, duration).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
 	tween.tween_property(label, "modulate:a", 0.0, duration).set_delay(duration * 0.3)
@@ -252,8 +268,8 @@ func _show_damage_number(amount: float, is_crit: bool = false):
 	tween.tween_callback(label.queue_free)
 
 
-func _show_crit_label():
-	var crit_label = Label.new()
+func _show_crit_label() -> void:
+	var crit_label: Label = Label.new()
 	crit_label.text = "CRIT!"
 	crit_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	crit_label.add_theme_color_override("font_color", Color(1.0, 0.3, 0.1))  # Red-orange
@@ -266,7 +282,7 @@ func _show_crit_label():
 
 	# Quick pop in, float up, and fade out
 	crit_label.scale = Vector2(0.5, 0.5)
-	var tween = crit_label.create_tween()
+	var tween: Tween = crit_label.create_tween()
 	tween.set_parallel(true)
 	tween.tween_property(crit_label, "scale", Vector2(1.2, 1.2), 0.1).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
 	tween.tween_property(crit_label, "position:y", crit_label.position.y - 30, 0.5).set_ease(Tween.EASE_OUT)

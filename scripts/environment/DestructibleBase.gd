@@ -5,12 +5,17 @@ extends Area2D
 @export var hp: float = 10.0
 @export var max_hp: float = 10.0
 
+# Preloaded scripts (avoid load() on every destruction)
+var _GoldCoinScript: GDScript = preload("res://scripts/pickups/GoldCoin.gd")
+var _FloorPickupScript: GDScript = preload("res://scripts/pickups/FloorPickup.gd")
+var _DeathParticlesScript: GDScript = preload("res://scripts/enemies/DeathParticles.gd")
+
 var is_destroyed: bool = false
 
 
 var _hit_cooldown: float = 0.0
 
-func _ready():
+func _ready() -> void:
 	collision_layer = 0
 	collision_mask = 4   # Detect PlayerWeapons (layer 3/bit 4)
 	add_to_group("destructibles")
@@ -19,7 +24,7 @@ func _ready():
 	area_entered.connect(_on_area_entered)
 
 
-func _process(delta):
+func _process(delta: float) -> void:
 	if _hit_cooldown > 0:
 		_hit_cooldown -= delta
 
@@ -29,15 +34,15 @@ func _on_area_entered(area: Area2D):
 		return
 	# Hit by a weapon projectile
 	if area.collision_layer & 4:  # PlayerWeapons layer
-		var dmg = 10.0
+		var dmg: float = 10.0
 		if "damage" in area:
 			dmg = area.damage
 		take_damage(dmg)
 		_hit_cooldown = 0.3  # Prevent multi-hits from same projectile
 
 
-func _setup_visual():
-	var sprite = Sprite2D.new()
+func _setup_visual() -> void:
+	var sprite: Sprite2D = Sprite2D.new()
 	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	match destructible_type:
 		"torch":
@@ -56,20 +61,20 @@ func _setup_visual():
 	add_child(sprite)
 
 
-func _setup_collision():
-	var shape = CollisionShape2D.new()
-	var rect = RectangleShape2D.new()
+func _setup_collision() -> void:
+	var shape: CollisionShape2D = CollisionShape2D.new()
+	var rect: RectangleShape2D = RectangleShape2D.new()
 	rect.size = Vector2(14, 16)
 	shape.shape = rect
 	add_child(shape)
 
 
-func take_damage(amount: float):
+func take_damage(amount: float) -> void:
 	if is_destroyed:
 		return
 	hp -= amount
 	# Hit flash
-	var sprite = get_node_or_null("Sprite")
+	var sprite: Node = get_node_or_null("Sprite")
 	if sprite:
 		sprite.modulate = Color(3.0, 3.0, 3.0, 1.0)
 		get_tree().create_timer(0.06).timeout.connect(func():
@@ -80,19 +85,19 @@ func take_damage(amount: float):
 		_destroy()
 
 
-func _destroy():
+func _destroy() -> void:
 	is_destroyed = true
 	_drop_loot()
 	_spawn_break_particles()
 	queue_free()
 
 
-func _drop_loot():
-	var pickups_node = get_tree().current_scene.get_node_or_null("Pickups")
+func _drop_loot() -> void:
+	var pickups_node: Node = get_tree().current_scene.get_node_or_null("Pickups")
 	if not pickups_node:
 		return
-	var luck_bonus = SaveData.get_stat_bonus("luck") if SaveData else 0.0
-	var roll = randf()
+	var luck_bonus: float = SaveData.get_stat_bonus("luck") if SaveData else 0.0
+	var roll: float = randf()
 	match destructible_type:
 		"torch":
 			if roll < 0.6 + luck_bonus * 0.1:
@@ -115,49 +120,46 @@ func _drop_loot():
 				_spawn_floor_pickup("magnet")
 
 
-func _spawn_gold(amount: int):
-	var GoldCoinScript = load("res://scripts/pickups/GoldCoin.gd")
+func _spawn_gold(amount: int) -> void:
 	for i in range(amount):
-		var coin = Area2D.new()
-		coin.set_script(GoldCoinScript)
+		var coin: Area2D = Area2D.new()
+		coin.set_script(_GoldCoinScript)
 		coin.gold_value = 1
 		coin.global_position = global_position + Vector2(randf_range(-15, 15), randf_range(-15, 15))
-		var pickups = get_tree().current_scene.get_node_or_null("Pickups")
+		var pickups: Node = get_tree().current_scene.get_node_or_null("Pickups")
 		if pickups:
 			pickups.add_child(coin)
 
 
-func _spawn_xp(tier: int):
-	var orb_scene = preload("res://scenes/pickups/XPOrb.tscn")
-	var orb = orb_scene.instantiate()
+func _spawn_xp(tier: int) -> void:
+	var orb_scene: PackedScene = preload("res://scenes/pickups/XPOrb.tscn")
+	var orb: Node = orb_scene.instantiate()
 	orb.global_position = global_position + Vector2(randf_range(-10, 10), randf_range(-10, 10))
 	orb.xp_tier = tier
-	var pickups = get_tree().current_scene.get_node_or_null("Pickups")
+	var pickups: Node = get_tree().current_scene.get_node_or_null("Pickups")
 	if pickups:
 		pickups.add_child(orb)
 
 
-func _spawn_floor_pickup(pickup_type: String):
-	var FloorPickupScript = load("res://scripts/pickups/FloorPickup.gd")
-	var pickup = Area2D.new()
-	pickup.set_script(FloorPickupScript)
+func _spawn_floor_pickup(pickup_type: String) -> void:
+	var pickup: Area2D = Area2D.new()
+	pickup.set_script(_FloorPickupScript)
 	pickup.pickup_type = pickup_type
 	pickup.global_position = global_position
-	var pickups = get_tree().current_scene.get_node_or_null("Pickups")
+	var pickups: Node = get_tree().current_scene.get_node_or_null("Pickups")
 	if pickups:
 		pickups.add_child(pickup)
 
 
-func _spawn_break_particles():
+func _spawn_break_particles() -> void:
 	var color: Color
 	match destructible_type:
 		"torch": color = Color(0.9, 0.6, 0.1)
 		"barrel": color = Color(0.5, 0.3, 0.1)
 		"crystal": color = Color(0.3, 0.5, 1.0)
 		_: color = Color.GRAY
-	var DeathParticlesScript = load("res://scripts/enemies/DeathParticles.gd")
-	var particles = Node2D.new()
-	particles.set_script(DeathParticlesScript)
+	var particles: Node2D = Node2D.new()
+	particles.set_script(_DeathParticlesScript)
 	particles.particle_color = color
 	particles.global_position = global_position
 	get_tree().current_scene.add_child(particles)
@@ -166,13 +168,13 @@ func _spawn_break_particles():
 func _load_or_generate(path: String, color: Color, w: int, h: int) -> Texture2D:
 	if ResourceLoader.exists(path):
 		return load(path)
-	var img = Image.create(w, h, false, Image.FORMAT_RGBA8)
-	var center = Vector2(w / 2.0, h / 2.0)
+	var img: Image = Image.create(w, h, false, Image.FORMAT_RGBA8)
+	var center: Vector2 = Vector2(w / 2.0, h / 2.0)
 	for x in range(w):
 		for y in range(h):
-			var dist = Vector2(x, y).distance_to(center) / (min(w, h) / 2.0)
+			var dist: float = Vector2(x, y).distance_to(center) / (min(w, h) / 2.0)
 			if dist <= 1.0:
-				var shade = color.darkened(dist * 0.3)
+				var shade: Color = color.darkened(dist * 0.3)
 				img.set_pixel(x, y, shade)
 			elif dist <= 1.2:
 				img.set_pixel(x, y, Color.BLACK)

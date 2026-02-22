@@ -10,7 +10,7 @@ var spawn_interval: float = 1.5
 var types: Array = ["torch", "torch", "torch", "barrel", "barrel", "crystal"]
 
 
-func _process(delta):
+func _process(delta: float) -> void:
 	if not GameState.is_game_active:
 		return
 	spawn_timer += delta
@@ -20,28 +20,28 @@ func _process(delta):
 	_despawn_far()
 
 
-func _try_spawn():
-	var existing = get_tree().get_nodes_in_group("destructibles")
+func _try_spawn() -> void:
+	var existing: Array[Node] = get_tree().get_nodes_in_group("destructibles")
 	if existing.size() >= max_destructibles:
 		return
-	var player = get_tree().current_scene.get_node_or_null("Player")
+	var player: Node = get_tree().current_scene.get_node_or_null("Player")
 	if not player:
 		return
-	var angle = randf() * TAU
-	var dist = randf_range(400.0, spawn_radius)
-	var pos = player.global_position + Vector2(cos(angle), sin(angle)) * dist
-	var destructible = Area2D.new()
+	var angle: float = randf() * TAU
+	var dist: float = randf_range(400.0, spawn_radius)
+	var pos: Vector2 = player.global_position + Vector2(cos(angle), sin(angle)) * dist
+	var destructible: Area2D = Area2D.new()
 	destructible.set_script(DestructibleScript)
 	destructible.destructible_type = types[randi() % types.size()]
 	destructible.global_position = pos
 	get_tree().current_scene.add_child(destructible)
 
 
-func _despawn_far():
-	var player = get_tree().current_scene.get_node_or_null("Player")
+func _despawn_far() -> void:
+	var player: Node = get_tree().current_scene.get_node_or_null("Player")
 	if not player:
 		return
-	var destructibles = get_tree().get_nodes_in_group("destructibles")
+	var destructibles: Array[Node] = get_tree().get_nodes_in_group("destructibles")
 	for d in destructibles:
 		if is_instance_valid(d) and d.global_position.distance_to(player.global_position) > despawn_radius:
 			d.queue_free()

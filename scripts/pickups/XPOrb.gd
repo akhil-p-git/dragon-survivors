@@ -24,7 +24,7 @@ const TIER_DATA = {
 }
 
 
-func _ready():
+func _ready() -> void:
 	collision_layer = 16  # Pickups layer
 	collision_mask = 1    # Detect Player
 	add_to_group("xp_orbs")
@@ -33,11 +33,11 @@ func _ready():
 	_apply_tier()
 
 
-func _apply_tier():
-	var data = TIER_DATA.get(xp_tier, TIER_DATA[1])
+func _apply_tier() -> void:
+	var data: Dictionary = TIER_DATA.get(xp_tier, TIER_DATA[1])
 	xp_value = data.xp
 	# Tint the sprite
-	var body = get_node_or_null("Body")
+	var body: Node = get_node_or_null("Body")
 	if body:
 		body.modulate = data.color
 		body.scale *= data.gem_scale
@@ -46,12 +46,12 @@ func _apply_tier():
 		scale *= data.gem_scale
 
 
-func _physics_process(delta):
+func _physics_process(delta: float) -> void:
 	if not is_instance_valid(player):
 		player = get_tree().current_scene.get_node_or_null("Player")
 		return
 
-	var dist = global_position.distance_to(player.global_position)
+	var dist: float = global_position.distance_to(player.global_position)
 
 	# Check if within direct pickup range (close) -- instant strong attract
 	if not is_attracted and dist <= player.pickup_range:
@@ -64,22 +64,22 @@ func _physics_process(delta):
 
 	if is_attracted:
 		# Strong attraction -- close range pickup
-		var direction = (player.global_position - global_position).normalized()
+		var direction: Vector2 = (player.global_position - global_position).normalized()
 		position += direction * attract_speed * delta
 		attract_speed += ATTRACT_ACCELERATION * delta
 
-		var new_dist = global_position.distance_to(player.global_position)
+		var new_dist: float = global_position.distance_to(player.global_position)
 		if new_dist < 20.0:
 			GameState.add_xp(xp_value)
 			queue_free()
 	elif is_magnetized:
 		# Gentle magnet pull -- accelerates smoothly toward player
-		var direction = (player.global_position - global_position).normalized()
+		var direction: Vector2 = (player.global_position - global_position).normalized()
 		magnet_speed = min(magnet_speed + MAGNET_ACCELERATION * delta, MAGNET_MAX_SPEED)
 		position += direction * magnet_speed * delta
 
 		# Transition to full attract once close enough
-		var new_dist = global_position.distance_to(player.global_position)
+		var new_dist: float = global_position.distance_to(player.global_position)
 		if new_dist <= player.pickup_range:
 			is_attracted = true
 		elif new_dist < 20.0:
@@ -88,11 +88,11 @@ func _physics_process(delta):
 
 
 ## Force this orb into attracted state (used by magnet pulse on level-up).
-func force_attract():
+func force_attract() -> void:
 	is_attracted = true
 
 
-func _on_area_entered(area):
+func _on_area_entered(area: Area2D) -> void:
 	# Also collect if directly touching player's pickup area
 	if area.get_parent() == get_tree().current_scene.get_node_or_null("Player"):
 		is_attracted = true

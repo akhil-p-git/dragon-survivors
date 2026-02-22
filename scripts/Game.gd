@@ -38,11 +38,11 @@ var arcana_manager: Node = null
 var arcana_ui_shown_at: Dictionary = {}  # game_time -> bool
 
 
-func _ready():
+func _ready() -> void:
 	# Handle character selection
-	var selected = GameState.selected_character
+	var selected: String = GameState.selected_character
 	if selected != "knight":
-		var scene_path = character_scenes.get(selected, "res://scenes/Player_Knight.tscn")
+		var scene_path: String = character_scenes.get(selected, "res://scenes/Player_Knight.tscn")
 		_swap_player(load(scene_path))
 
 	# Apply character-specific stat modifications
@@ -77,12 +77,12 @@ func _ready():
 	_give_starting_weapon()
 
 	# Add level up UI
-	var level_up_ui = level_up_ui_scene.instantiate()
+	var level_up_ui: Node = level_up_ui_scene.instantiate()
 	add_child(level_up_ui)
 	GameState.level_up.connect(func(_level): level_up_ui.show_choices())
 
 	# Add results screen
-	var results_screen = results_screen_scene.instantiate()
+	var results_screen: Node = results_screen_scene.instantiate()
 	results_screen.name = "ResultsScreen"
 	add_child(results_screen)
 
@@ -90,7 +90,7 @@ func _ready():
 	player.player_died.connect(func(): results_screen.show_defeat())
 
 	# Boss timer -- 60s for testing, set to 900 for real gameplay
-	var boss_timer = Timer.new()
+	var boss_timer: Timer = Timer.new()
 	boss_timer.name = "BossTimer"
 	boss_timer.wait_time = 60.0
 	boss_timer.one_shot = true
@@ -99,12 +99,12 @@ func _ready():
 	add_child(boss_timer)
 
 	# Add pause menu
-	var pause_menu = pause_menu_scene.instantiate()
+	var pause_menu: Node = pause_menu_scene.instantiate()
 	pause_menu.name = "PauseMenu"
 	add_child(pause_menu)
 
 	# Add destructible spawner
-	var destr_spawner = Node.new()
+	var destr_spawner: Node = Node.new()
 	destr_spawner.name = "DestructibleSpawner"
 	destr_spawner.set_script(load("res://scripts/environment/DestructibleSpawner.gd"))
 	add_child(destr_spawner)
@@ -113,18 +113,18 @@ func _ready():
 	_setup_arcana_manager()
 
 
-func _process(_delta):
+func _process(_delta: float) -> void:
 	# Check arcana selection triggers
 	if arcana_manager and GameState.is_game_active:
 		if arcana_manager.check_selection_trigger(GameState.game_time):
 			_show_arcana_selection()
 
 
-func _swap_player(scene: PackedScene):
-	var old_player = player
-	var old_pos = old_player.global_position
-	var camera = old_player.get_node_or_null("Camera2D")
-	var weapon_manager = old_player.get_node_or_null("WeaponManager")
+func _swap_player(scene: PackedScene) -> void:
+	var old_player: CharacterBody2D = player
+	var old_pos: Vector2 = old_player.global_position
+	var camera: Node = old_player.get_node_or_null("Camera2D")
+	var weapon_manager: Node = old_player.get_node_or_null("WeaponManager")
 	if camera:
 		old_player.remove_child(camera)
 	if weapon_manager:
@@ -132,7 +132,7 @@ func _swap_player(scene: PackedScene):
 	remove_child(old_player)
 	old_player.queue_free()
 
-	var new_player = scene.instantiate()
+	var new_player: CharacterBody2D = scene.instantiate()
 	new_player.name = "Player"
 	new_player.global_position = old_pos
 	add_child(new_player)
@@ -142,7 +142,7 @@ func _swap_player(scene: PackedScene):
 	if camera:
 		player.add_child(camera)
 	else:
-		var cam = Camera2D.new()
+		var cam: Camera2D = Camera2D.new()
 		cam.name = "Camera2D"
 		cam.position_smoothing_enabled = true
 		cam.position_smoothing_speed = 8.0
@@ -152,14 +152,14 @@ func _swap_player(scene: PackedScene):
 	if weapon_manager:
 		player.add_child(weapon_manager)
 	else:
-		var wm = Node.new()
+		var wm: Node = Node.new()
 		wm.name = "WeaponManager"
 		wm.set_script(load("res://scripts/WeaponManager.gd"))
 		player.add_child(wm)
 
 
-func _apply_character_bonuses():
-	var selected = GameState.selected_character
+func _apply_character_bonuses() -> void:
+	var selected: String = GameState.selected_character
 	match selected:
 		"mage":
 			# Mage: cooldown bonus applied via passive
@@ -175,43 +175,43 @@ func _apply_character_bonuses():
 			player.base_move_speed = player.move_speed
 
 
-func _give_starting_weapon():
-	var weapon_manager = player.get_node_or_null("WeaponManager")
+func _give_starting_weapon() -> void:
+	var weapon_manager: Node = player.get_node_or_null("WeaponManager")
 	if not weapon_manager:
 		return
-	var selected = GameState.selected_character
-	var weapon_script_path = character_weapons.get(selected, "res://scripts/weapons/Weapon_SwordArc.gd")
-	var weapon_script = load(weapon_script_path)
-	var weapon = Node.new()
+	var selected: String = GameState.selected_character
+	var weapon_script_path: String = character_weapons.get(selected, "res://scripts/weapons/Weapon_SwordArc.gd")
+	var weapon_script: Variant = load(weapon_script_path)
+	var weapon: Node = Node.new()
 	weapon.set_script(weapon_script)
 	weapon_manager.add_child(weapon)
 	weapon_manager.weapons.append(weapon)
 
 
-func _setup_passive_item_manager():
-	var passive_manager = Node.new()
+func _setup_passive_item_manager() -> void:
+	var passive_manager: Node = Node.new()
 	passive_manager.name = "PassiveItemManager"
 	passive_manager.set_script(load("res://scripts/passive_items/PassiveItemManager.gd"))
 	player.add_child(passive_manager)
 
 
-func _setup_evolution_manager():
-	var evo_manager = Node.new()
+func _setup_evolution_manager() -> void:
+	var evo_manager: Node = Node.new()
 	evo_manager.name = "EvolutionManager"
 	evo_manager.set_script(load("res://scripts/EvolutionManager.gd"))
 	player.add_child(evo_manager)
 
 
-func _setup_arcana_manager():
+func _setup_arcana_manager() -> void:
 	arcana_manager = Node.new()
 	arcana_manager.name = "ArcanaManager"
 	arcana_manager.set_script(load("res://scripts/ArcanaManager.gd"))
 	add_child(arcana_manager)
 
 
-func _on_player_level_up(new_level: int):
+func _on_player_level_up(new_level: int) -> void:
 	# Character-specific level bonuses
-	var selected = GameState.selected_character
+	var selected: String = GameState.selected_character
 	if new_level % 5 == 0:
 		match selected:
 			"mage":
@@ -226,13 +226,13 @@ func _on_player_level_up(new_level: int):
 				GameState.luck_bonus += 0.10
 
 
-func _on_player_died():
+func _on_player_died() -> void:
 	GameState.is_game_active = false
 
 
-func _spawn_boss():
-	var dragon = dragon_scene.instantiate()
-	var offset = Vector2(600, 0).rotated(randf() * TAU)
+func _spawn_boss() -> void:
+	var dragon: CharacterBody2D = dragon_scene.instantiate()
+	var offset: Vector2 = Vector2(600, 0).rotated(randf() * TAU)
 	dragon.global_position = player.global_position + offset
 	dragon.boss_died.connect(func():
 		get_tree().create_timer(1.5).timeout.connect(func():
@@ -243,24 +243,24 @@ func _spawn_boss():
 	$Enemies.add_child(dragon)
 
 
-func _show_arcana_selection():
-	var choices = arcana_manager.get_random_choices(3)
+func _show_arcana_selection() -> void:
+	var choices: Array = arcana_manager.get_random_choices(3)
 	if choices.size() == 0:
 		arcana_manager.selections_done += 1
 		return
 
 	# Create arcana selection UI
-	var arcana_ui = CanvasLayer.new()
+	var arcana_ui: CanvasLayer = CanvasLayer.new()
 	arcana_ui.layer = 12
 	arcana_ui.process_mode = Node.PROCESS_MODE_ALWAYS
 
-	var bg = ColorRect.new()
+	var bg: ColorRect = ColorRect.new()
 	bg.color = Color(0, 0, 0, 0.7)
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	bg.mouse_filter = Control.MOUSE_FILTER_STOP
 	arcana_ui.add_child(bg)
 
-	var vbox = VBoxContainer.new()
+	var vbox: VBoxContainer = VBoxContainer.new()
 	vbox.set_anchors_preset(Control.PRESET_CENTER)
 	vbox.anchor_left = 0.5
 	vbox.anchor_top = 0.5
@@ -273,34 +273,34 @@ func _show_arcana_selection():
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	arcana_ui.add_child(vbox)
 
-	var title = Label.new()
+	var title: Label = Label.new()
 	title.text = "CHOOSE AN ARCANA"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 32)
 	title.add_theme_color_override("font_color", Color.MEDIUM_PURPLE)
 	vbox.add_child(title)
 
-	var spacer = Control.new()
+	var spacer: Control = Control.new()
 	spacer.custom_minimum_size = Vector2(0, 20)
 	vbox.add_child(spacer)
 
-	var cards_hbox = HBoxContainer.new()
+	var cards_hbox: HBoxContainer = HBoxContainer.new()
 	cards_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	cards_hbox.add_theme_constant_override("separation", 20)
 	vbox.add_child(cards_hbox)
 
 	for arcana in choices:
-		var card = _create_arcana_card(arcana, arcana_ui)
+		var card: PanelContainer = _create_arcana_card(arcana, arcana_ui)
 		cards_hbox.add_child(card)
 
 	get_tree().paused = true
 	add_child(arcana_ui)
 
 
-func _create_arcana_card(arcana, arcana_ui: CanvasLayer) -> PanelContainer:
-	var card = PanelContainer.new()
+func _create_arcana_card(arcana: Variant, arcana_ui: CanvasLayer) -> PanelContainer:
+	var card: PanelContainer = PanelContainer.new()
 	card.custom_minimum_size = Vector2(220, 280)
-	var style = StyleBoxFlat.new()
+	var style: StyleBoxFlat = StyleBoxFlat.new()
 	style.bg_color = Color(0.15, 0.1, 0.25, 0.95)
 	style.corner_radius_top_left = 12
 	style.corner_radius_top_right = 12
@@ -321,18 +321,18 @@ func _create_arcana_card(arcana, arcana_ui: CanvasLayer) -> PanelContainer:
 	card.gui_input.connect(func(event: InputEvent):
 		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 			arcana_manager.select_arcana(arcana)
-			arcana_manager.apply_arcana_modifiers(player)
+			arcana_manager.apply_latest_arcana_modifiers(player)
 			arcana_ui.queue_free()
 			get_tree().paused = false
 	)
 
-	var vbox = VBoxContainer.new()
+	var vbox: VBoxContainer = VBoxContainer.new()
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	vbox.add_theme_constant_override("separation", 12)
 	vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	card.add_child(vbox)
 
-	var type_label = Label.new()
+	var type_label: Label = Label.new()
 	type_label.text = "ARCANA"
 	type_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	type_label.add_theme_font_size_override("font_size", 12)
@@ -340,14 +340,14 @@ func _create_arcana_card(arcana, arcana_ui: CanvasLayer) -> PanelContainer:
 	type_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(type_label)
 
-	var icon = ColorRect.new()
+	var icon: ColorRect = ColorRect.new()
 	icon.color = arcana.icon_color
 	icon.custom_minimum_size = Vector2(48, 48)
 	icon.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(icon)
 
-	var name_label = Label.new()
+	var name_label: Label = Label.new()
 	name_label.text = arcana.arcana_name
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_label.add_theme_font_size_override("font_size", 18)
@@ -355,7 +355,7 @@ func _create_arcana_card(arcana, arcana_ui: CanvasLayer) -> PanelContainer:
 	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(name_label)
 
-	var desc_label = Label.new()
+	var desc_label: Label = Label.new()
 	desc_label.text = arcana.description
 	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

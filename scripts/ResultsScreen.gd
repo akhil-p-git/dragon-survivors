@@ -6,17 +6,17 @@ var play_again_btn: Button
 var main_menu_btn: Button
 
 
-func _ready():
+func _ready() -> void:
 	visible = false
 	layer = 20
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
-	var bg = ColorRect.new()
+	var bg: ColorRect = ColorRect.new()
 	bg.color = Color(0, 0, 0, 0.85)
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
 
-	var vbox = VBoxContainer.new()
+	var vbox: VBoxContainer = VBoxContainer.new()
 	vbox.set_anchors_preset(Control.PRESET_CENTER)
 	vbox.anchor_left = 0.5
 	vbox.anchor_top = 0.5
@@ -35,7 +35,7 @@ func _ready():
 	title_label.add_theme_font_size_override("font_size", 48)
 	vbox.add_child(title_label)
 
-	var spacer = Control.new()
+	var spacer: Control = Control.new()
 	spacer.custom_minimum_size = Vector2(0, 20)
 	vbox.add_child(spacer)
 
@@ -44,7 +44,7 @@ func _ready():
 	stats_label.add_theme_font_size_override("font_size", 22)
 	vbox.add_child(stats_label)
 
-	var spacer2 = Control.new()
+	var spacer2: Control = Control.new()
 	spacer2.custom_minimum_size = Vector2(0, 30)
 	vbox.add_child(spacer2)
 
@@ -61,7 +61,7 @@ func _ready():
 	vbox.add_child(main_menu_btn)
 
 
-func show_victory():
+func show_victory() -> void:
 	visible = true
 	get_tree().paused = true
 	title_label.text = "VICTORY!"
@@ -69,7 +69,7 @@ func show_victory():
 	_update_stats()
 
 
-func show_defeat():
+func show_defeat() -> void:
 	visible = true
 	get_tree().paused = true
 	title_label.text = "DEFEATED"
@@ -77,17 +77,17 @@ func show_defeat():
 	_update_stats()
 
 
-func _update_stats():
-	var minutes = int(GameState.game_time) / 60
-	var seconds = int(GameState.game_time) % 60
+func _update_stats() -> void:
+	var minutes: int = int(GameState.game_time) / 60
+	var seconds: int = int(GameState.game_time) % 60
 	stats_label.text = "Time Survived: %02d:%02d\nLevel Reached: %d\nEnemies Killed: %d\nGold Earned: %d\nTotal Gold: %d" % [minutes, seconds, GameState.player_level, GameState.enemies_killed, GameState.gold_collected, SaveData.gold]
 
 
-func _on_play_again():
+func _on_play_again() -> void:
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://scenes/Game.tscn")
 
 
-func _on_main_menu():
+func _on_main_menu() -> void:
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://scenes/MainMenu.tscn")

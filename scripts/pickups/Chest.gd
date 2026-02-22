@@ -12,32 +12,32 @@ const TIER_COLORS = {
 const TIER_ITEMS = {1: 1, 2: 3, 3: 5}
 
 
-func _ready():
+func _ready() -> void:
 	collision_layer = 16  # Pickups
 	collision_mask = 1    # Player
 	body_entered.connect(_on_body_entered)
 	# Apply tier tint
-	var body = get_node_or_null("Body")
+	var body: Node = get_node_or_null("Body")
 	if body:
 		body.modulate = TIER_COLORS.get(chest_tier, Color.WHITE)
 
 
-func _on_body_entered(body):
+func _on_body_entered(body: Node2D) -> void:
 	if is_opened:
 		return
 	if body.name == "Player" or body.is_in_group("player"):
 		_open()
 
 
-func _open():
+func _open() -> void:
 	is_opened = true
-	var player = get_tree().current_scene.get_node_or_null("Player")
-	var weapon_manager = player.get_node_or_null("WeaponManager") if player else null
-	var passive_manager = player.get_node_or_null("PassiveItemManager") if player else null
-	var evolution_manager = player.get_node_or_null("EvolutionManager") if player else null
+	var player: Node = get_tree().current_scene.get_node_or_null("Player")
+	var weapon_manager: Node = player.get_node_or_null("WeaponManager") if player else null
+	var passive_manager: Node = player.get_node_or_null("PassiveItemManager") if player else null
+	var evolution_manager: Node = player.get_node_or_null("EvolutionManager") if player else null
 
-	var items_to_give = TIER_ITEMS.get(chest_tier, 1)
-	var evolved = false
+	var items_to_give: int = TIER_ITEMS.get(chest_tier, 1)
+	var evolved: bool = false
 
 	# Check for weapon evolution (Silver+ chests, after 5 minutes)
 	if chest_tier >= 2 and GameState.game_time >= 300.0 and evolution_manager and weapon_manager and passive_manager:
@@ -48,15 +48,13 @@ func _open():
 				_show_evolution_text(evo.data.evolved_name)
 				evolved = true
 				items_to_give -= 1
-	# Gold chest: guaranteed evolution attempt
-	elif chest_tier >= 3 and GameState.game_time >= 300.0 and evolution_manager and weapon_manager and passive_manager:
-		var evo = evolution_manager.get_eligible_evolution(weapon_manager, passive_manager)
-		if not evo.is_empty():
-			var evolved_weapon = evolution_manager.evolve_weapon(weapon_manager, evo.weapon, evo.data)
-			if evolved_weapon:
-				_show_evolution_text(evo.data.evolved_name)
-				evolved = true
-				items_to_give -= 1
+				# Gold chest: attempt a second evolution
+				if chest_tier >= 3:
+					var evo2 = evolution_manager.get_eligible_evolution(weapon_manager, passive_manager)
+					if not evo2.is_empty():
+						var evolved2 = evolution_manager.evolve_weapon(weapon_manager, evo2.weapon, evo2.data)
+						if evolved2:
+							items_to_give -= 1
 
 	# Give remaining item upgrades
 	if weapon_manager:
@@ -75,14 +73,14 @@ func _open():
 					_show_upgrade_text("Max Level!")
 
 	# Open animation and free
-	var tween = create_tween()
+	var tween: Tween = create_tween()
 	tween.tween_property(self, "scale", Vector2(1.5, 1.5), 0.3)
 	tween.parallel().tween_property(self, "modulate:a", 0.0, 0.3)
 	tween.tween_callback(queue_free)
 
 
-func _show_upgrade_text(text: String):
-	var label = Label.new()
+func _show_upgrade_text(text: String) -> void:
+	var label: Label = Label.new()
 	label.text = text
 	label.add_theme_color_override("font_color", Color.GOLD)
 	label.add_theme_font_size_override("font_size", 24)
@@ -91,14 +89,14 @@ func _show_upgrade_text(text: String):
 	label.global_position = global_position + Vector2(-40, -50)
 	label.z_index = 100
 	get_tree().current_scene.add_child(label)
-	var tween = label.create_tween()
+	var tween: Tween = label.create_tween()
 	tween.tween_property(label, "position:y", label.position.y - 60, 1.0)
 	tween.parallel().tween_property(label, "modulate:a", 0.0, 1.0)
 	tween.tween_callback(label.queue_free)
 
 
-func _show_evolution_text(weapon_name: String):
-	var label = Label.new()
+func _show_evolution_text(weapon_name: String) -> void:
+	var label: Label = Label.new()
 	label.text = "EVOLVED: " + weapon_name + "!"
 	label.add_theme_color_override("font_color", Color(1.0, 0.5, 1.0))
 	label.add_theme_font_size_override("font_size", 30)
@@ -109,7 +107,7 @@ func _show_evolution_text(weapon_name: String):
 	label.z_index = 100
 	label.scale = Vector2(0.5, 0.5)
 	get_tree().current_scene.add_child(label)
-	var tween = label.create_tween()
+	var tween: Tween = label.create_tween()
 	tween.tween_property(label, "scale", Vector2(1.2, 1.2), 0.2).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
 	tween.tween_property(label, "scale", Vector2(1.0, 1.0), 0.1)
 	tween.tween_property(label, "position:y", label.position.y - 80, 1.5)

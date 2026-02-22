@@ -11,14 +11,14 @@ var orbiting: bool = false
 var orbit_timer: float = 0.0
 
 
-func _ready():
+func _ready() -> void:
 	super._ready()
 	weapon_name = "Orbiting Orbs"
 	base_damage = 14.0
 	base_cooldown = 4.0  # cooldown between orbit cycles
 
 
-func _process(delta):
+func _process(delta: float) -> void:
 	if orbiting:
 		orbit_angle += _get_orbit_speed() * delta
 		orbit_timer -= delta
@@ -34,7 +34,7 @@ func _process(delta):
 			cooldown_timer = get_cooldown()
 
 
-func attack():
+func attack() -> void:
 	if not is_instance_valid(player):
 		return
 	_spawn_projectiles()
@@ -62,42 +62,51 @@ func _get_orbit_speed() -> float:
 	return orbit_speed
 
 
-func _spawn_projectiles():
+func _spawn_projectiles() -> void:
 	_despawn_projectiles()
-	var count = _get_projectile_count()
+	var count: int = _get_projectile_count()
 	for i in range(count):
-		var proj = orbit_projectile_scene.instantiate()
+		var proj: Node = orbit_projectile_scene.instantiate()
 		proj.damage = get_damage()
-		var angle = (float(i) / float(count)) * TAU
-		var offset = Vector2(cos(angle), sin(angle)) * orbit_radius
+		var angle: float = (float(i) / float(count)) * TAU
+		var offset: Vector2 = Vector2(cos(angle), sin(angle)) * orbit_radius
 		proj.global_position = player.global_position + offset
-		get_tree().current_scene.get_node("Projectiles").add_child(proj)
+		var proj_node: Node = _get_projectiles_node()
+		if proj_node:
+			proj_node.add_child(proj)
 		projectiles.append(proj)
 	orbit_angle = 0.0
 
 
-func _update_projectile_positions():
+func _update_projectile_positions() -> void:
 	if not is_instance_valid(player):
 		return
-	var count = projectiles.size()
+	var count: int = projectiles.size()
 	for i in range(count):
 		if is_instance_valid(projectiles[i]):
-			var angle = orbit_angle + (float(i) / float(count)) * TAU
-			var offset = Vector2(cos(angle), sin(angle)) * orbit_radius
+			var angle: float = orbit_angle + (float(i) / float(count)) * TAU
+			var offset: Vector2 = Vector2(cos(angle), sin(angle)) * orbit_radius
 			projectiles[i].global_position = player.global_position + offset
 
 
-func _despawn_projectiles():
+func _despawn_projectiles() -> void:
 	for proj in projectiles:
 		if is_instance_valid(proj):
 			# Fade out before freeing
-			var tween = proj.create_tween()
+			var tween: Tween = proj.create_tween()
 			tween.tween_property(proj, "modulate:a", 0.0, 0.2)
 			tween.tween_callback(proj.queue_free)
 	projectiles.clear()
 
 
-func level_up():
+func _exit_tree() -> void:
+	for proj in projectiles:
+		if is_instance_valid(proj):
+			proj.queue_free()
+	projectiles.clear()
+
+
+func level_up() -> void:
 	super.level_up()
 	# If currently orbiting, respawn with new count
 	if orbiting:

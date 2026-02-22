@@ -36,17 +36,20 @@ var damage_taken_mult: float = 1.0
 # Life steal percentage (from arcana)
 var life_steal: float = 0.0
 
+# Global attack speed multiplier (from buffs)
+var attack_speed_mult: float = 1.0
+
 signal level_up(new_level: int)
 signal xp_changed(current: float, needed: float)
 signal game_time_updated(time: float)
 signal gold_changed(amount: int)
 
 
-func _ready():
+func _ready() -> void:
 	pass
 
 
-func start_game():
+func start_game() -> void:
 	player_level = 1
 	player_xp = 0.0
 	xp_to_next_level = 13.0
@@ -65,10 +68,12 @@ func start_game():
 	xp_growth_mult = 1.0 + (SaveData.get_stat_bonus("xp_mult") if SaveData else 0.0)
 	damage_taken_mult = 1.0
 	life_steal = 0.0
+	attack_speed_mult = 1.0
+	_last_emitted_second = -1
 
 
-func add_xp(amount: float):
-	var boosted = amount * xp_growth_mult
+func add_xp(amount: float) -> void:
+	var boosted: float = amount * xp_growth_mult
 	player_xp += boosted
 	emit_signal("xp_changed", player_xp, xp_to_next_level)
 	while player_xp >= xp_to_next_level:
@@ -79,7 +84,13 @@ func add_xp(amount: float):
 		emit_signal("xp_changed", player_xp, xp_to_next_level)
 
 
-func _process(delta):
+var _last_emitted_second: int = -1
+
+func _process(delta: float) -> void:
 	if is_game_active:
 		game_time += delta
-		emit_signal("game_time_updated", game_time)
+		# Only emit timer signal when the displayed second changes
+		var current_second: int = int(game_time)
+		if current_second != _last_emitted_second:
+			_last_emitted_second = current_second
+			emit_signal("game_time_updated", game_time)

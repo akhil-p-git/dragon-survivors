@@ -7,32 +7,32 @@ var aoe_radius: float = 60.0
 var lifetime: float = 2.5
 
 
-func _ready():
+func _ready() -> void:
 	collision_layer = 4  # PlayerWeapons (Layer 3)
 	collision_mask = 2   # Enemies (Layer 2)
 	body_entered.connect(_on_body_entered)
 	get_tree().create_timer(lifetime).timeout.connect(queue_free)
 
 
-func _physics_process(delta):
+func _physics_process(delta: float) -> void:
 	position += direction * speed * delta
 
 
-func _on_body_entered(body):
+func _on_body_entered(body: Node2D) -> void:
 	if body.is_in_group("enemies"):
 		_explode()
 
 
-func _explode():
+func _explode() -> void:
 	# AoE damage to all enemies in radius
-	var enemies = get_tree().get_nodes_in_group("enemies")
+	var enemies: Array[Node] = get_tree().get_nodes_in_group("enemies")
 	for e in enemies:
 		if is_instance_valid(e) and e.is_alive:
-			var dist = global_position.distance_to(e.global_position)
+			var dist: float = global_position.distance_to(e.global_position)
 			if dist <= aoe_radius:
 				e.take_damage(damage)
 	# Visual explosion effect - scale up then free
-	var tween = create_tween()
+	var tween: Tween = create_tween()
 	tween.tween_property(self, "scale", Vector2(3, 3), 0.2)
 	tween.tween_property(self, "modulate:a", 0.0, 0.15)
 	tween.tween_callback(queue_free)

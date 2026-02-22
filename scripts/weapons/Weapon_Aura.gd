@@ -11,14 +11,14 @@ var base_radius: float = 75.0
 var base_knockback: float = 50.0
 
 
-func _ready():
+func _ready() -> void:
 	super._ready()
 	weapon_name = "Aura"
 	base_damage = 10.0
 	base_cooldown = 1.2
 
 
-func _process(delta):
+func _process(delta: float) -> void:
 	# Keep the aura following the player
 	if is_instance_valid(aura_instance) and is_instance_valid(player):
 		aura_instance.global_position = player.global_position
@@ -26,12 +26,12 @@ func _process(delta):
 	super._process(delta)
 
 
-func attack():
+func attack() -> void:
 	if not is_instance_valid(player):
 		return
 
-	var radius = _get_radius()
-	var enemies = get_enemies_in_range(radius)
+	var radius: float = _get_radius()
+	var enemies: Array = get_enemies_in_range(radius)
 
 	if enemies.size() == 0 and not is_instance_valid(aura_instance):
 		# Still show the pulse even if no enemies are hit
@@ -42,22 +42,22 @@ func attack():
 	_spawn_pulse_visual(radius)
 
 	# Deal damage and knockback to all enemies in range
-	var knockback_force = _get_knockback()
+	var knockback_force: float = _get_knockback()
 	for enemy in enemies:
 		if not is_instance_valid(enemy) or not enemy.is_alive:
 			continue
 		enemy.take_damage(get_damage())
 		# Apply knockback: push enemy away from player center
-		var direction = (enemy.global_position - player.global_position).normalized()
+		var direction: Vector2 = (enemy.global_position - player.global_position).normalized()
 		if direction == Vector2.ZERO:
 			direction = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)).normalized()
 		enemy.global_position += direction * knockback_force
 
 
-func _spawn_pulse_visual(radius: float):
+func _spawn_pulse_visual(radius: float) -> void:
 	if not is_instance_valid(player):
 		return
-	var effect = aura_effect_scene.instantiate()
+	var effect: Node = aura_effect_scene.instantiate()
 	effect.pulse_radius = radius
 	effect.global_position = player.global_position
 	get_tree().current_scene.add_child(effect)
@@ -71,7 +71,6 @@ func _get_radius() -> float:
 		4: return 95.0                 # 95
 		5: return 120.0                # 120
 		_: return base_radius
-	return base_radius
 
 
 func _get_knockback() -> float:
@@ -81,20 +80,25 @@ func _get_knockback() -> float:
 
 
 func get_cooldown() -> float:
-	var cd = base_cooldown
+	var cd: float = base_cooldown
 	if level >= 4:
 		cd = 1.0
 	cd *= attack_speed_multiplier
+	# Apply global attack speed buff from level-up buffs
+	cd *= GameState.attack_speed_mult
 	# Apply passive cooldown multiplier from player (Tome passive item)
 	if is_instance_valid(player) and "passive_cooldown_multiplier" in player:
 		cd *= player.passive_cooldown_multiplier
+	# Apply meta-progression cooldown bonus
+	if SaveData:
+		cd *= (1.0 - SaveData.get_stat_bonus("cooldown_mult"))
 	return cd
 
 
 func get_damage() -> float:
 	# Custom damage scaling for aura
 	# Level 1: base, Level 2: +damage, Level 5: +damage again
-	var dmg = base_damage
+	var dmg: float = base_damage
 	if level >= 2:
 		dmg += base_damage * 0.5
 	if level >= 5:
@@ -102,4 +106,7 @@ func get_damage() -> float:
 	# Apply passive damage multiplier from player (Spinach passive item)
 	if is_instance_valid(player) and "passive_damage_multiplier" in player:
 		dmg *= player.passive_damage_multiplier
+	# Apply meta-progression Might bonus
+	if SaveData:
+		dmg *= (1.0 + SaveData.get_stat_bonus("damage_mult"))
 	return dmg

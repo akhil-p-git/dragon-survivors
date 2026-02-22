@@ -14,6 +14,7 @@ var magnet_range: float = 100.0
 var current_hp: float
 var is_alive: bool = true
 var facing_direction: Vector2 = Vector2.RIGHT
+var aim_direction: Vector2 = Vector2.RIGHT
 
 # Base stats (saved at _ready so passive multipliers can reference them)
 var base_move_speed: float
@@ -31,7 +32,7 @@ signal hp_changed(current_hp: float, max_hp: float)
 signal player_died
 
 
-func _ready():
+func _ready() -> void:
 	# Apply meta-progression permanent upgrades from SaveData
 	if SaveData:
 		max_hp *= (1.0 + SaveData.get_stat_bonus("max_hp_mult"))
@@ -53,11 +54,11 @@ func _ready():
 	emit_signal("hp_changed", current_hp, max_hp)
 
 
-func _physics_process(_delta):
+func _physics_process(_delta: float) -> void:
 	if not is_alive:
 		return
 
-	var input_dir = Vector2.ZERO
+	var input_dir: Vector2 = Vector2.ZERO
 	input_dir.x = Input.get_axis("move_left", "move_right")
 	input_dir.y = Input.get_axis("move_up", "move_down")
 
@@ -65,8 +66,14 @@ func _physics_process(_delta):
 		input_dir = input_dir.normalized()
 		facing_direction = input_dir
 
+	# Aim direction follows the mouse cursor
+	var mouse_pos: Vector2 = get_global_mouse_position()
+	var to_mouse: Vector2 = (mouse_pos - global_position)
+	if to_mouse.length_squared() > 1.0:
+		aim_direction = to_mouse.normalized()
+
 	# Apply passive move speed multiplier on top of current move_speed
-	var effective_speed = move_speed * passive_move_speed_multiplier
+	var effective_speed: float = move_speed * passive_move_speed_multiplier
 	velocity = input_dir * effective_speed
 	move_and_slide()
 
@@ -76,10 +83,10 @@ func get_total_armor() -> float:
 	return armor + passive_armor_bonus
 
 
-func take_damage(amount: float):
+func take_damage(amount: float) -> void:
 	if not is_alive:
 		return
-	var actual_damage = max(amount - get_total_armor(), 1.0)
+	var actual_damage: float = max(amount - get_total_armor(), 1.0)
 	current_hp -= actual_damage
 	emit_signal("hp_changed", current_hp, max_hp)
 	# Hit flash on the Body sprite (red tint)
@@ -95,14 +102,14 @@ func take_damage(amount: float):
 		emit_signal("player_died")
 
 
-func heal(amount: float):
+func heal(amount: float) -> void:
 	current_hp = min(current_hp + amount, max_hp)
 	emit_signal("hp_changed", current_hp, max_hp)
 
 
 ## Brief red flash on the Body sprite when the player takes damage.
-func _hit_flash():
-	var body = get_node_or_null("Body")
+func _hit_flash() -> void:
+	var body: Node = get_node_or_null("Body")
 	if not body:
 		# Fallback: tint the whole node
 		modulate = Color.RED
@@ -117,7 +124,7 @@ func _hit_flash():
 
 ## Called when the player levels up.  Grows the magnet radius and triggers a
 ## brief pulse that pulls every XP orb on screen toward the player.
-func on_level_up(new_level: int):
+func on_level_up(new_level: int) -> void:
 	# Grow magnet range with level
 	magnet_range = base_magnet_range + magnet_range_per_level * (new_level - 1)
 	# Trigger magnet pulse -- attract ALL existing XP orbs instantly
@@ -125,8 +132,8 @@ func on_level_up(new_level: int):
 
 
 ## Force-attract every XP orb currently in the scene tree.
-func _magnet_pulse():
-	var orbs = get_tree().get_nodes_in_group("xp_orbs")
+func _magnet_pulse() -> void:
+	var orbs: Array[Node] = get_tree().get_nodes_in_group("xp_orbs")
 	for orb in orbs:
 		if is_instance_valid(orb) and orb.has_method("force_attract"):
 			orb.force_attract()

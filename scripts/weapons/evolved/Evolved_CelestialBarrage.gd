@@ -1,32 +1,28 @@
-extends "res://scripts/weapons/WeaponBase.gd"
+extends "res://scripts/weapons/Weapon_Orbiting.gd"
 ## Celestial Barrage - Evolved Orbiting Orbs + Hollow Heart
 ## 8 orbs, larger orbit, orbs explode on contact
-
-var orbit_projectile_scene: PackedScene = preload("res://scenes/weapons/OrbitProjectile.tscn")
-var orbit_radius: float = 120.0
-var orbit_speed: float = 3.0
-var orbit_duration: float = 5.0
-var projectiles: Array = []
-var orbit_angle: float = 0.0
-var orbiting: bool = false
-var orbit_timer: float = 0.0
+## Inherits orbit_projectile_scene, orbit state, _update_projectile_positions,
+## _despawn_projectiles, _exit_tree from Weapon_Orbiting
 
 
-func _ready():
+func _ready() -> void:
 	super._ready()
 	weapon_name = "Celestial Barrage"
 	base_damage = 22.0
 	base_cooldown = 4.0
+	orbit_radius = 120.0
+	orbit_speed = 3.0
+	orbit_duration = 5.0
 	level = 5
 	max_level = 5
 
 
-func _process(delta):
+func _process(delta: float) -> void:
 	if orbiting:
 		orbit_angle += orbit_speed * delta
 		orbit_timer -= delta
 		_update_projectile_positions()
-		# Check hits
+		# Check hits on a timer
 		cooldown_timer -= delta
 		if cooldown_timer <= 0:
 			cooldown_timer = 0.2
@@ -42,67 +38,43 @@ func _process(delta):
 			cooldown_timer = get_cooldown()
 
 
-func attack():
-	if not is_instance_valid(player):
-		return
-	_spawn_projectiles()
-	orbiting = true
-	orbit_timer = orbit_duration
-
-
-func _spawn_projectiles():
+func _spawn_projectiles() -> void:
 	_despawn_projectiles()
-	var count = 8 + get_extra_projectiles()
+	var count: int = 8 + get_extra_projectiles()
 	for i in range(count):
-		var proj = orbit_projectile_scene.instantiate()
+		var proj: Node = orbit_projectile_scene.instantiate()
 		proj.damage = get_damage()
 		proj.scale = Vector2(1.5, 1.5)
 		proj.modulate = Color(0.6, 0.8, 1.0, 0.9)
-		var angle = (float(i) / float(count)) * TAU
-		var offset = Vector2(cos(angle), sin(angle)) * orbit_radius
+		var angle: float = (float(i) / float(count)) * TAU
+		var offset: Vector2 = Vector2(cos(angle), sin(angle)) * orbit_radius
 		proj.global_position = player.global_position + offset
-		get_tree().current_scene.get_node("Projectiles").add_child(proj)
+		var proj_node: Node = _get_projectiles_node()
+		if proj_node:
+			proj_node.add_child(proj)
 		projectiles.append(proj)
 	orbit_angle = 0.0
 
 
-func _update_projectile_positions():
-	if not is_instance_valid(player):
-		return
-	var count = projectiles.size()
-	for i in range(count):
-		if is_instance_valid(projectiles[i]):
-			var angle = orbit_angle + (float(i) / float(count)) * TAU
-			var offset = Vector2(cos(angle), sin(angle)) * orbit_radius
-			projectiles[i].global_position = player.global_position + offset
-
-
-func _check_hits():
+func _check_hits() -> void:
+	var hit_range_sq: float = 30.0 * 30.0
 	for proj in projectiles:
 		if not is_instance_valid(proj):
 			continue
-		var enemies = get_tree().get_nodes_in_group("enemies")
+		var proj_pos: Vector2 = proj.global_position
+		var enemies: Array[Node] = get_tree().get_nodes_in_group("enemies")
 		for enemy in enemies:
 			if is_instance_valid(enemy) and enemy.is_alive:
-				if proj.global_position.distance_to(enemy.global_position) < 30.0:
+				if proj_pos.distance_squared_to(enemy.global_position) < hit_range_sq:
 					enemy.take_damage(get_damage())
-					# Explosion effect: damage nearby enemies
-					_explode_at(proj.global_position)
+					_explode_at(proj_pos)
 					break
 
 
-func _explode_at(pos: Vector2):
-	var enemies = get_tree().get_nodes_in_group("enemies")
+func _explode_at(pos: Vector2) -> void:
+	var explode_range_sq: float = 60.0 * 60.0
+	var enemies: Array[Node] = get_tree().get_nodes_in_group("enemies")
 	for e in enemies:
 		if is_instance_valid(e) and e.is_alive:
-			if pos.distance_to(e.global_position) < 60.0:
+			if pos.distance_squared_to(e.global_position) < explode_range_sq:
 				e.take_damage(get_damage() * 0.4)
-
-
-func _despawn_projectiles():
-	for proj in projectiles:
-		if is_instance_valid(proj):
-			var tween = proj.create_tween()
-			tween.tween_property(proj, "modulate:a", 0.0, 0.2)
-			tween.tween_callback(proj.queue_free)
-	projectiles.clear()

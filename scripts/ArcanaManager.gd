@@ -9,11 +9,11 @@ var selections_done: int = 0
 signal arcana_selection_ready(choices: Array)
 
 
-func _ready():
+func _ready() -> void:
 	_register_all()
 
 
-func _register_all():
+func _register_all() -> void:
 	all_arcanas = [
 		ArcanaData.create(
 			"Fury of the Dragon",
@@ -87,7 +87,7 @@ func get_random_choices(count: int = 3) -> Array:
 	return filtered.slice(0, min(count, filtered.size()))
 
 
-func select_arcana(arcana: ArcanaData):
+func select_arcana(arcana: ArcanaData) -> void:
 	active_arcanas.append(arcana)
 	selections_done += 1
 
@@ -100,28 +100,41 @@ func check_selection_trigger(game_time: float) -> bool:
 	return false
 
 
-func apply_arcana_modifiers(player):
+## Apply only the most recently selected arcana's modifiers (call after select_arcana).
+func apply_latest_arcana_modifiers(player: CharacterBody2D) -> void:
 	if not is_instance_valid(player):
 		return
-	for arcana in active_arcanas:
-		for stat in arcana.modifiers:
-			var value = arcana.modifiers[stat]
-			match stat:
-				"damage_mult":
-					player.passive_damage_multiplier += value
-				"move_speed_mult":
-					player.passive_move_speed_multiplier += value
-				"cooldown_mult":
-					player.passive_cooldown_multiplier += value
-				"extra_projectiles":
-					player.passive_extra_projectiles += int(value)
-				"max_hp_cap":
-					if player.max_hp > value:
-						player.max_hp = value
-						player.current_hp = min(player.current_hp, value)
-						player.emit_signal("hp_changed", player.current_hp, player.max_hp)
+	if active_arcanas.is_empty():
+		return
+	var arcana: ArcanaData = active_arcanas.back()
+	_apply_single_arcana(player, arcana)
 
 
-func reset():
+func _apply_single_arcana(player: CharacterBody2D, arcana: ArcanaData) -> void:
+	for stat in arcana.modifiers:
+		var value = arcana.modifiers[stat]
+		match stat:
+			"damage_mult":
+				player.passive_damage_multiplier += value
+			"move_speed_mult":
+				player.passive_move_speed_multiplier += value
+			"cooldown_mult":
+				player.passive_cooldown_multiplier += value
+			"extra_projectiles":
+				player.passive_extra_projectiles += int(value)
+			"damage_taken_mult":
+				GameState.damage_taken_mult += value
+			"life_steal":
+				GameState.life_steal += value
+			"luck":
+				GameState.luck_bonus += value
+			"max_hp_cap":
+				if player.max_hp > value:
+					player.max_hp = value
+					player.current_hp = min(player.current_hp, value)
+					player.emit_signal("hp_changed", player.current_hp, player.max_hp)
+
+
+func reset() -> void:
 	active_arcanas.clear()
 	selections_done = 0
