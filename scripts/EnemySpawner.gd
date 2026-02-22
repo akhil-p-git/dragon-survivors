@@ -5,9 +5,10 @@ var skeleton_scene: PackedScene = preload("res://scenes/enemies/Enemy_Skeleton.t
 var knight_scene: PackedScene = preload("res://scenes/enemies/Enemy_ArmoredKnight.tscn")
 
 var spawn_timer: float = 0.0
-var base_spawn_interval: float = 2.0
-var min_spawn_interval: float = 0.3
+var base_spawn_interval: float = 1.2
+var min_spawn_interval: float = 0.25
 var spawn_distance: float = 700.0  # Spawn off-screen
+var max_enemies: int = 300  # Performance safety cap
 
 # Mini-boss tracking
 var mini_boss_spawned: Dictionary = {}  # time_key: bool
@@ -27,7 +28,7 @@ func _process(delta):
 
 	if spawn_timer >= interval:
 		spawn_timer = 0.0
-		spawn_enemy()
+		spawn_wave()
 
 	# Check for mini-boss spawns
 	_check_mini_boss_spawns()
@@ -36,31 +37,69 @@ func _process(delta):
 func get_spawn_interval() -> float:
 	# Spawn faster as time goes on
 	var time_factor = GameState.game_time / 60.0  # Gets faster every minute
-	var interval = base_spawn_interval - (time_factor * 0.15)
+	var interval = base_spawn_interval - (time_factor * 0.07)
 	# 12+ minutes: even faster spawn rate
 	if GameState.game_time >= 720.0:
-		interval *= 0.6
+		interval *= 0.55
 	return max(interval, min_spawn_interval)
 
 
-func spawn_enemy():
+func _get_spawn_count() -> int:
+	var game_time = GameState.game_time
+	if game_time < 120.0:
+		# 0-2 min: always singles (onboarding)
+		return 1
+	elif game_time < 300.0:
+		# 2-5 min: 30% chance of 2
+		return 2 if randf() < 0.30 else 1
+	elif game_time < 600.0:
+		# 5-10 min: 40% chance of 2, 15% chance of 3
+		var roll = randf()
+		if roll < 0.15:
+			return 3
+		elif roll < 0.55:
+			return 2
+		else:
+			return 1
+	else:
+		# 10+ min: 40% chance of 2, 30% chance of 3
+		var roll = randf()
+		if roll < 0.30:
+			return 3
+		elif roll < 0.70:
+			return 2
+		else:
+			return 1
+
+
+func spawn_wave():
 	var player = get_tree().current_scene.get_node_or_null("Player")
 	if not player:
 		return
 
-	# Random position around player, off-screen
-	var angle = randf() * TAU
-	var pos = player.global_position + Vector2(cos(angle), sin(angle)) * spawn_distance
+	# Check enemy cap
+	var enemy_count = get_tree().get_nodes_in_group("enemies").size()
+	if enemy_count >= max_enemies:
+		return
 
-	var enemy_scene = _pick_enemy_scene()
-	var enemy = enemy_scene.instantiate()
-	enemy.global_position = pos
+	var count = _get_spawn_count()
+	var base_angle = randf() * TAU
 
-	# Elite chance: 10% after 5 minutes
-	if GameState.game_time >= 300.0 and randf() < 0.10:
-		enemy.is_elite = true
+	for i in range(count):
+		# Spread multi-spawns by ~20 degrees so they don't stack
+		var spread_offset = (i - (count - 1) / 2.0) * 0.35
+		var angle = base_angle + spread_offset
+		var pos = player.global_position + Vector2(cos(angle), sin(angle)) * spawn_distance
 
-	get_tree().current_scene.get_node("Enemies").add_child(enemy)
+		var enemy_scene = _pick_enemy_scene()
+		var enemy = enemy_scene.instantiate()
+		enemy.global_position = pos
+
+		# Elite chance: 8% after 5 minutes
+		if GameState.game_time >= 300.0 and randf() < 0.08:
+			enemy.is_elite = true
+
+		get_tree().current_scene.get_node("Enemies").add_child(enemy)
 
 
 func _pick_enemy_scene() -> PackedScene:

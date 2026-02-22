@@ -1,14 +1,14 @@
 extends CharacterBody2D
 
-@export var move_speed: float = 300.0
-@export var max_hp: float = 100.0
+@export var move_speed: float = 310.0
+@export var max_hp: float = 120.0
 @export var armor: float = 0.0
 @export var pickup_range: float = 100.0
 
 # XP magnet radius -- orbs within this range drift toward the player
-@export var base_magnet_range: float = 100.0
+@export var base_magnet_range: float = 120.0
 ## Extra magnet range gained per player level.
-@export var magnet_range_per_level: float = 8.0
+@export var magnet_range_per_level: float = 10.0
 var magnet_range: float = 100.0
 
 var current_hp: float

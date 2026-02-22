@@ -6,8 +6,8 @@ var fireball_scene: PackedScene = preload("res://scenes/weapons/Fireball.tscn")
 func _ready():
 	super._ready()
 	weapon_name = "Fireball"
-	base_damage = 20.0
-	base_cooldown = 2.0
+	base_damage = 22.0
+	base_cooldown = 1.6
 
 
 func attack():
@@ -35,7 +35,7 @@ func attack():
 func _spawn_fireball(direction: Vector2):
 	var fb = fireball_scene.instantiate()
 	fb.damage = get_damage()
-	fb.aoe_radius = 60.0 + (level - 1) * 10.0
+	fb.aoe_radius = 75.0 + (level - 1) * 12.0
 	fb.direction = direction
 	fb.speed = 350.0
 	fb.global_position = player.global_position

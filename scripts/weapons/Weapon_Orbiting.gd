@@ -2,9 +2,9 @@ extends "res://scripts/weapons/WeaponBase.gd"
 
 var orbit_projectile_scene: PackedScene = preload("res://scenes/weapons/OrbitProjectile.tscn")
 
-var orbit_radius: float = 80.0
-var orbit_speed: float = 2.0  # radians per second
-var orbit_duration: float = 4.0  # how long projectiles stay active
+var orbit_radius: float = 90.0
+var orbit_speed: float = 2.5  # radians per second
+var orbit_duration: float = 4.5  # how long projectiles stay active
 var projectiles: Array = []
 var orbit_angle: float = 0.0
 var orbiting: bool = false
@@ -14,8 +14,8 @@ var orbit_timer: float = 0.0
 func _ready():
 	super._ready()
 	weapon_name = "Orbiting Orbs"
-	base_damage = 12.0
-	base_cooldown = 5.0  # cooldown between orbit cycles
+	base_damage = 14.0
+	base_cooldown = 4.0  # cooldown between orbit cycles
 
 
 func _process(delta):
@@ -43,14 +43,14 @@ func attack():
 
 
 func _get_projectile_count() -> int:
-	# Level 1: 2, Level 2: 3, Level 3: 3, Level 4: 4, Level 5: 4
+	# Level 1: 3, Level 2: 3, Level 3: 4, Level 4: 4, Level 5: 5
 	var base_count: int
 	match level:
-		1: base_count = 2
+		1: base_count = 3
 		2: base_count = 3
-		3: base_count = 3
+		3: base_count = 4
 		4: base_count = 4
-		_: base_count = 4
+		_: base_count = 5
 	# Add extra projectiles from Duplicator passive item
 	return base_count + get_extra_projectiles()
 

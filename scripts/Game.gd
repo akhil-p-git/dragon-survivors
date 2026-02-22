@@ -129,6 +129,7 @@ func _swap_player(scene: PackedScene):
 		old_player.remove_child(camera)
 	if weapon_manager:
 		old_player.remove_child(weapon_manager)
+	remove_child(old_player)
 	old_player.queue_free()
 
 	var new_player = scene.instantiate()

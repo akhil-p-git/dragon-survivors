@@ -3,7 +3,7 @@ extends "res://scripts/enemies/EnemyBase.gd"
 var fire_breath_timer: float = 0.0
 var fire_breath_interval: float = 4.0
 var summon_timer: float = 0.0
-var summon_interval: float = 8.0
+var summon_interval: float = 6.0
 var is_fire_breathing: bool = false
 var slime_scene: PackedScene = preload("res://scenes/enemies/Enemy_Slime.tscn")
 var fire_breath_damage: float = 15.0
@@ -98,7 +98,7 @@ func _execute_fire_breath():
 
 
 func _summon_adds():
-	for i in range(3):
+	for i in range(4):
 		var slime = slime_scene.instantiate()
 		var angle = randf() * TAU
 		slime.global_position = global_position + Vector2(cos(angle), sin(angle)) * 80.0

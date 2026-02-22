@@ -6,8 +6,8 @@ var arrow_scene: PackedScene = preload("res://scenes/weapons/Arrow.tscn")
 func _ready():
 	super._ready()
 	weapon_name = "Arrow Shot"
-	base_damage = 12.0
-	base_cooldown = 1.0
+	base_damage = 14.0
+	base_cooldown = 0.8
 
 
 func attack():
@@ -36,8 +36,8 @@ func _spawn_arrow(direction: Vector2):
 	var arrow = arrow_scene.instantiate()
 	arrow.damage = get_damage()
 	arrow.direction = direction
-	arrow.pierce_count = level  # 1 at level 1, up to 5
-	arrow.speed = 500.0
+	arrow.pierce_count = level + 1  # 2 at level 1, up to 6
+	arrow.speed = 550.0
 	arrow.global_position = player.global_position
 	arrow.rotation = direction.angle()
 	get_tree().current_scene.get_node("Projectiles").add_child(arrow)

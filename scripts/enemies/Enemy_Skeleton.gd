@@ -1,17 +1,17 @@
 extends "res://scripts/enemies/EnemyBase.gd"
 
 var shoot_timer: float = 0.0
-var shoot_interval: float = 2.5
+var shoot_interval: float = 3.0
 var bone_scene: PackedScene = preload("res://scenes/enemies/BoneProjectile.tscn")
 
 
 func _ready():
 	super._ready()
 	move_speed = 50.0
-	max_hp = 40.0
+	max_hp = 32.0
 	current_hp = max_hp
-	contact_damage = 12.0
-	xp_value = 5.0
+	contact_damage = 10.0
+	xp_value = 3.5
 	xp_tier = 2  # Green gem
 	gold_min = 2
 	gold_max = 4

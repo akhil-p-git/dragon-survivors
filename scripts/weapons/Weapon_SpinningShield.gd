@@ -1,7 +1,7 @@
 extends "res://scripts/weapons/WeaponBase.gd"
 
-var shield_count: int = 2
-var orbit_radius: float = 80.0
+var shield_count: int = 3
+var orbit_radius: float = 85.0
 var orbit_speed: float = 3.0
 var shields: Array = []
 var time_elapsed: float = 0.0
@@ -10,8 +10,8 @@ var time_elapsed: float = 0.0
 func _ready():
 	super._ready()
 	weapon_name = "Spinning Shield"
-	base_damage = 8.0
-	base_cooldown = 0.3  # Damage tick rate
+	base_damage = 10.0
+	base_cooldown = 0.25  # Damage tick rate
 	_create_shields()
 
 
@@ -38,14 +38,14 @@ func _create_shields():
 		shield.collision_mask = 2   # Enemies
 		var shape = CollisionShape2D.new()
 		var circle = CircleShape2D.new()
-		circle.radius = 12.0 + level * 2.0
+		circle.radius = 14.0 + level * 2.0
 		shape.shape = circle
 		shield.add_child(shape)
 		# Visual — shield sprite
 		var sprite = Sprite2D.new()
 		sprite.texture = load("res://assets/sprites/shield.png")
 		sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-		var scale_factor = (12.0 + level * 2.0) / 8.0  # Scale relative to base sprite size
+		var scale_factor = (14.0 + level * 2.0) / 8.0  # Scale relative to base sprite size
 		sprite.scale = Vector2(scale_factor, scale_factor)
 		shield.add_child(sprite)
 		get_tree().current_scene.get_node("Projectiles").add_child(shield)

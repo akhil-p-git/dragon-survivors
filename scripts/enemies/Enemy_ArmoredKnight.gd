@@ -1,7 +1,7 @@
 extends "res://scripts/enemies/EnemyBase.gd"
 
 var attack_timer: float = 0.0
-var attack_interval: float = 3.0
+var attack_interval: float = 3.5
 var attack_range: float = 60.0
 var is_attacking: bool = false
 var telegraph_time: float = 0.8
@@ -10,10 +10,10 @@ var telegraph_time: float = 0.8
 func _ready():
 	super._ready()
 	move_speed = 35.0
-	max_hp = 120.0
+	max_hp = 90.0
 	current_hp = max_hp
-	contact_damage = 20.0
-	xp_value = 10.0
+	contact_damage = 16.0
+	xp_value = 7.0
 	xp_tier = 2  # Green gem
 	gold_min = 3
 	gold_max = 6
@@ -54,5 +54,5 @@ func _execute_attack():
 	modulate = Color.WHITE
 	var dist = global_position.distance_to(player.global_position)
 	if dist <= attack_range * 1.5 and player.is_alive:
-		player.take_damage(contact_damage * 2.0)  # Heavy hit
+		player.take_damage(contact_damage * 1.8)  # Heavy hit
 	is_attacking = false

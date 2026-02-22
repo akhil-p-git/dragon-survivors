@@ -43,9 +43,9 @@ func _ready():
 
 
 func _apply_elite():
-	max_hp *= 3.0
+	max_hp *= 2.5
 	current_hp = max_hp
-	contact_damage *= 1.5
+	contact_damage *= 1.4
 	scale *= 1.5
 	xp_tier = max(xp_tier + 1, 3)
 	gold_drop_chance = 1.0

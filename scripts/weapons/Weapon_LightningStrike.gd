@@ -9,21 +9,21 @@ extends "res://scripts/weapons/WeaponBase.gd"
 ##   L5: 3 strikes, +damage
 
 var lightning_scene: PackedScene = preload("res://scenes/weapons/LightningStrike.tscn")
-var strike_range: float = 300.0
+var strike_range: float = 350.0
 
 
 func _ready():
 	super._ready()
 	weapon_name = "Lightning Strike"
-	base_damage = 25.0
-	base_cooldown = 2.0
+	base_damage = 28.0
+	base_cooldown = 1.7
 
 
 func get_cooldown() -> float:
 	# Level 4+ reduces base cooldown to 1.6s
 	var cd = base_cooldown
 	if level >= 4:
-		cd = 1.6
+		cd = 1.3
 	# Apply the per-level scaling and attack speed multiplier from base
 	cd *= (1.0 - (level - 1) * 0.08)
 	cd *= attack_speed_multiplier
@@ -36,7 +36,7 @@ func get_cooldown() -> float:
 func _get_strike_count() -> int:
 	var base_count: int = 1
 	if level >= 5:
-		base_count = 3
+		base_count = 4
 	elif level >= 3:
 		base_count = 2
 	# Add extra strikes from Duplicator passive item

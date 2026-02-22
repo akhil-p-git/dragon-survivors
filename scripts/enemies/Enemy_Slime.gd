@@ -11,10 +11,10 @@ var hop_direction: Vector2 = Vector2.ZERO
 func _ready():
 	super._ready()
 	move_speed = 0.0  # Movement handled by hop system
-	max_hp = 25.0
+	max_hp = 18.0
 	current_hp = max_hp
-	contact_damage = 8.0
-	xp_value = 2.0
+	contact_damage = 6.0
+	xp_value = 1.2
 	xp_tier = 1  # Blue gem
 	gold_min = 1
 	gold_max = 2

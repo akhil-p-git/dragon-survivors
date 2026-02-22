@@ -6,8 +6,8 @@ var sword_arc_scene: PackedScene = preload("res://scenes/weapons/SwordArc.tscn")
 func _ready():
 	super._ready()
 	weapon_name = "Sword Arc"
-	base_damage = 15.0
-	base_cooldown = 1.2
+	base_damage = 18.0
+	base_cooldown = 1.0
 
 
 func attack():
@@ -37,6 +37,6 @@ func _spawn_arc(direction: Vector2):
 	arc.global_position = player.global_position
 	arc.rotation = direction.angle() + PI / 2
 	# Scale with level
-	var scale_bonus = 1.0 + (level - 1) * 0.15
+	var scale_bonus = 1.0 + (level - 1) * 0.20
 	arc.scale = Vector2(scale_bonus, scale_bonus)
 	get_tree().current_scene.get_node("Projectiles").add_child(arc)

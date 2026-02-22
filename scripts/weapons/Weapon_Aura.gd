@@ -7,15 +7,15 @@ var aura_effect_scene: PackedScene = preload("res://scenes/weapons/AuraEffect.ts
 var aura_instance: Node2D = null
 
 # Level scaling parameters
-var base_radius: float = 60.0
-var base_knockback: float = 40.0
+var base_radius: float = 75.0
+var base_knockback: float = 50.0
 
 
 func _ready():
 	super._ready()
 	weapon_name = "Aura"
-	base_damage = 8.0
-	base_cooldown = 1.5
+	base_damage = 10.0
+	base_cooldown = 1.2
 
 
 func _process(delta):
@@ -65,11 +65,11 @@ func _spawn_pulse_visual(radius: float):
 
 func _get_radius() -> float:
 	match level:
-		1: return base_radius          # 60
-		2: return base_radius          # 60
-		3: return 80.0                 # 80
-		4: return 80.0                 # 80
-		5: return 100.0                # 100
+		1: return base_radius          # 75
+		2: return base_radius          # 75
+		3: return 95.0                 # 95
+		4: return 95.0                 # 95
+		5: return 120.0                # 120
 		_: return base_radius
 	return base_radius
 
@@ -83,7 +83,7 @@ func _get_knockback() -> float:
 func get_cooldown() -> float:
 	var cd = base_cooldown
 	if level >= 4:
-		cd = 1.2
+		cd = 1.0
 	cd *= attack_speed_multiplier
 	# Apply passive cooldown multiplier from player (Tome passive item)
 	if is_instance_valid(player) and "passive_cooldown_multiplier" in player:
@@ -96,9 +96,9 @@ func get_damage() -> float:
 	# Level 1: base, Level 2: +damage, Level 5: +damage again
 	var dmg = base_damage
 	if level >= 2:
-		dmg += base_damage * 0.4
+		dmg += base_damage * 0.5
 	if level >= 5:
-		dmg += base_damage * 0.4
+		dmg += base_damage * 0.5
 	# Apply passive damage multiplier from player (Spinach passive item)
 	if is_instance_valid(player) and "passive_damage_multiplier" in player:
 		dmg *= player.passive_damage_multiplier

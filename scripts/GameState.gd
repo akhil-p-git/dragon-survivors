@@ -2,7 +2,7 @@ extends Node
 
 var player_level: int = 1
 var player_xp: float = 0.0
-var xp_to_next_level: float = 10.0
+var xp_to_next_level: float = 13.0
 var game_time: float = 0.0
 var enemies_killed: int = 0
 var is_game_active: bool = false
@@ -49,7 +49,7 @@ func _ready():
 func start_game():
 	player_level = 1
 	player_xp = 0.0
-	xp_to_next_level = 10.0
+	xp_to_next_level = 13.0
 	game_time = 0.0
 	enemies_killed = 0
 	is_game_active = true
@@ -74,7 +74,7 @@ func add_xp(amount: float):
 	while player_xp >= xp_to_next_level:
 		player_xp -= xp_to_next_level
 		player_level += 1
-		xp_to_next_level = 10.0 + (player_level * 5.0)
+		xp_to_next_level = 13.0 + (player_level * 6.5)
 		emit_signal("level_up", player_level)
 		emit_signal("xp_changed", player_xp, xp_to_next_level)
 
