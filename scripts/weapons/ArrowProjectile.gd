@@ -8,18 +8,18 @@ var lifetime: float = 3.0
 var hits: int = 0
 
 
-func _ready():
+func _ready() -> void:
 	collision_layer = 4  # PlayerWeapons (Layer 3)
 	collision_mask = 2   # Enemies (Layer 2)
 	body_entered.connect(_on_body_entered)
 	get_tree().create_timer(lifetime).timeout.connect(queue_free)
 
 
-func _physics_process(delta):
+func _physics_process(delta: float) -> void:
 	position += direction * speed * delta
 
 
-func _on_body_entered(body):
+func _on_body_entered(body: Node2D) -> void:
 	if body.is_in_group("enemies") and body.is_alive:
 		body.take_damage(damage)
 		hits += 1

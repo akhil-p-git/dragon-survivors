@@ -19,7 +19,7 @@ var evolved_weapons: Array = []
 
 ## Check if any weapon is eligible for evolution.
 ## Returns the evolution data dict or null.
-func get_eligible_evolution(weapon_manager, passive_manager) -> Dictionary:
+func get_eligible_evolution(weapon_manager: Node, passive_manager: Node) -> Dictionary:
 	if not weapon_manager or not passive_manager:
 		return {}
 	for weapon in weapon_manager.weapons:
@@ -29,29 +29,29 @@ func get_eligible_evolution(weapon_manager, passive_manager) -> Dictionary:
 			continue
 		if weapon.level < weapon.max_level:
 			continue
-		var evo_data = evolution_pairs.get(weapon.weapon_name, {})
+		var evo_data: Dictionary = evolution_pairs.get(weapon.weapon_name, {})
 		if evo_data.is_empty():
 			continue
-		var required_passive = evo_data.passive
+		var required_passive: String = evo_data.passive
 		if passive_manager.get_item_level(required_passive) > 0:
 			return {"weapon": weapon, "data": evo_data}
 	return {}
 
 
 ## Perform the evolution: replace the base weapon with the evolved version.
-func evolve_weapon(weapon_manager, weapon, evo_data: Dictionary) -> Node:
-	var script_path = evo_data.evolved_script
-	var evolved_script = load(script_path)
+func evolve_weapon(weapon_manager: Node, weapon: Node, evo_data: Dictionary) -> Node:
+	var script_path: String = evo_data.evolved_script
+	var evolved_script: Variant = load(script_path)
 	if not evolved_script:
 		push_warning("EvolutionManager: Could not load evolved script: %s" % script_path)
 		return null
 
 	# Create evolved weapon
-	var evolved = Node.new()
+	var evolved: Node = Node.new()
 	evolved.set_script(evolved_script)
 
 	# Replace in weapon manager
-	var idx = weapon_manager.weapons.find(weapon)
+	var idx: int = weapon_manager.weapons.find(weapon)
 	weapon.queue_free()
 	weapon_manager.add_child(evolved)
 	if idx >= 0:

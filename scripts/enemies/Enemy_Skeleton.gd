@@ -5,7 +5,7 @@ var shoot_interval: float = 2.5
 var bone_scene: PackedScene = preload("res://scenes/enemies/BoneProjectile.tscn")
 
 
-func _ready():
+func _ready() -> void:
 	super._ready()
 	move_speed = 50.0
 	max_hp = 40.0
@@ -18,7 +18,7 @@ func _ready():
 	death_particle_color = Color(0.9, 0.9, 0.85)  # White/bone particles
 
 
-func _physics_process(delta):
+func _physics_process(delta: float) -> void:
 	if not is_alive or not is_instance_valid(player):
 		return
 
@@ -31,10 +31,12 @@ func _physics_process(delta):
 		_throw_bone()
 
 
-func _throw_bone():
+func _throw_bone() -> void:
 	if not is_instance_valid(player):
 		return
-	var bone = bone_scene.instantiate()
+	var bone: Node = bone_scene.instantiate()
 	bone.global_position = global_position
 	bone.direction = (player.global_position - global_position).normalized()
-	get_tree().current_scene.get_node("Projectiles").add_child(bone)
+	var proj_node: Node = get_tree().current_scene.get_node_or_null("Projectiles")
+	if proj_node:
+		proj_node.add_child(bone)

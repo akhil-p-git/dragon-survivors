@@ -11,12 +11,12 @@ var player: CharacterBody2D
 var attack_speed_multiplier: float = 1.0
 
 
-func _ready():
+func _ready() -> void:
 	# Weapon -> WeaponManager -> Player
 	player = get_parent().get_parent()
 
 
-func _process(delta):
+func _process(delta: float) -> void:
 	cooldown_timer -= delta
 	if cooldown_timer <= 0:
 		attack()
@@ -24,7 +24,7 @@ func _process(delta):
 
 
 func get_damage() -> float:
-	var raw = base_damage + (level - 1) * (base_damage * 0.3)
+	var raw: float = base_damage + (level - 1) * (base_damage * 0.3)
 	# Apply passive damage multiplier from player (Spinach, etc.)
 	if is_instance_valid(player) and "passive_damage_multiplier" in player:
 		raw *= player.passive_damage_multiplier
@@ -35,8 +35,10 @@ func get_damage() -> float:
 
 
 func get_cooldown() -> float:
-	var cd = base_cooldown * (1.0 - (level - 1) * 0.08)
+	var cd: float = base_cooldown * (1.0 - (level - 1) * 0.08)
 	cd *= attack_speed_multiplier
+	# Apply global attack speed buff from level-up buffs
+	cd *= GameState.attack_speed_mult
 	# Apply passive cooldown multiplier from player (Tome, etc.)
 	if is_instance_valid(player) and "passive_cooldown_multiplier" in player:
 		cd *= player.passive_cooldown_multiplier
@@ -54,28 +56,45 @@ func get_extra_projectiles() -> int:
 	return 0
 
 
-func level_up():
+func level_up() -> void:
 	level = min(level + 1, max_level)
 
 
-func attack():
+func attack() -> void:
 	pass  # Override in subclasses
 
 
+## Safe accessor for the Projectiles container node.
+func _get_projectiles_node() -> Node:
+	return get_tree().current_scene.get_node_or_null("Projectiles")
+
+
 func get_enemies_in_range(range_val: float) -> Array:
-	var enemies = get_tree().get_nodes_in_group("enemies")
+	if not is_instance_valid(player):
+		return []
+	var range_sq: float = range_val * range_val
+	var player_pos: Vector2 = player.global_position
+	var enemies: Array = get_tree().get_nodes_in_group("enemies")
 	var in_range: Array = []
 	for e in enemies:
 		if is_instance_valid(e) and e.is_alive:
-			var dist = player.global_position.distance_to(e.global_position)
-			if dist <= range_val:
+			if player_pos.distance_squared_to(e.global_position) <= range_sq:
 				in_range.append(e)
-	in_range.sort_custom(func(a, b): return player.global_position.distance_to(a.global_position) < player.global_position.distance_to(b.global_position))
+	in_range.sort_custom(func(a, b): return player_pos.distance_squared_to(a.global_position) < player_pos.distance_squared_to(b.global_position))
 	return in_range
 
 
-func get_nearest_enemy(range_val: float = 600.0):
-	var enemies = get_enemies_in_range(range_val)
-	if enemies.size() > 0:
-		return enemies[0]
-	return null
+func get_nearest_enemy(range_val: float = 600.0) -> Variant:
+	if not is_instance_valid(player):
+		return null
+	var range_sq: float = range_val * range_val
+	var player_pos: Vector2 = player.global_position
+	var nearest: Variant = null
+	var nearest_dist_sq: float = range_sq
+	for e in get_tree().get_nodes_in_group("enemies"):
+		if is_instance_valid(e) and e.is_alive:
+			var d_sq: float = player_pos.distance_squared_to(e.global_position)
+			if d_sq <= nearest_dist_sq:
+				nearest = e
+				nearest_dist_sq = d_sq
+	return nearest

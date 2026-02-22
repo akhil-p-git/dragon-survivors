@@ -20,11 +20,11 @@ var cooldown_multiplier: float = 1.0
 signal passive_items_changed
 
 
-func _ready():
+func _ready() -> void:
 	_register_all_items()
 
 
-func _register_all_items():
+func _register_all_items() -> void:
 	_register(PassiveItemData.create(
 		"Spinach",
 		"+10% damage per level",
@@ -63,7 +63,7 @@ func _register_all_items():
 	))
 
 
-func _register(data: PassiveItemData):
+func _register(data: PassiveItemData) -> void:
 	_item_registry[data.item_name] = data
 
 
@@ -113,20 +113,20 @@ func add_or_upgrade_item(item_name: String) -> int:
 
 
 ## Resets all owned items (called at start of a new run).
-func reset():
+func reset() -> void:
 	_owned_items.clear()
 	_recalculate_bonuses()
 	emit_signal("passive_items_changed")
 
 
 ## Restores state from GameState (e.g. if PassiveItemManager is recreated mid-run).
-func restore_from_game_state():
+func restore_from_game_state() -> void:
 	_owned_items = GameState.passive_items.duplicate()
 	_recalculate_bonuses()
 
 
 ## Recalculates all aggregate bonuses from owned items.
-func _recalculate_bonuses():
+func _recalculate_bonuses() -> void:
 	damage_multiplier = 1.0
 	armor_bonus = 0.0
 	move_speed_multiplier = 1.0
@@ -156,7 +156,7 @@ func _recalculate_bonuses():
 
 ## Applies all passive bonuses to the player node.
 ## Should be called after any change, or once per frame if desired.
-func apply_to_player(player: CharacterBody2D):
+func apply_to_player(player: CharacterBody2D) -> void:
 	if not is_instance_valid(player):
 		return
 

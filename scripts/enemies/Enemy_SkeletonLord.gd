@@ -10,7 +10,7 @@ var summon_timer: float = 0.0
 var summon_interval: float = 8.0
 
 
-func _ready():
+func _ready() -> void:
 	super._ready()
 	max_hp = 600.0
 	current_hp = max_hp
@@ -22,7 +22,7 @@ func _ready():
 	scale = Vector2(2.0, 2.0)
 
 
-func _physics_process(delta):
+func _physics_process(delta: float) -> void:
 	super._physics_process(delta)
 	if not is_alive or not is_instance_valid(player):
 		return
@@ -36,39 +36,34 @@ func _physics_process(delta):
 		_summon_skeletons()
 
 
-func _bone_barrage():
+func _bone_barrage() -> void:
 	if not is_instance_valid(player):
 		return
 	# Fire 6 bones in a spread toward the player
-	var dir_to_player = (player.global_position - global_position).normalized()
-	for i in range(6):
-		var angle_offset = (i - 2.5) * 0.2
-		var dir = dir_to_player.rotated(angle_offset)
-		var bone = bone_scene.instantiate()
+	var dir_to_player: Vector2 = (player.global_position - global_position).normalized()
+	for i: int in range(6):
+		var angle_offset: float = (i - 2.5) * 0.2
+		var dir: Vector2 = dir_to_player.rotated(angle_offset)
+		var bone: Node = bone_scene.instantiate()
 		bone.global_position = global_position
 		bone.direction = dir
 		bone.speed = 220.0
 		bone.damage = 12.0
-		get_tree().current_scene.get_node("Projectiles").add_child(bone)
+		var proj_node: Node = get_tree().current_scene.get_node_or_null("Projectiles")
+		if proj_node:
+			proj_node.add_child(bone)
 
 
-func _summon_skeletons():
-	for i in range(3):
-		var skel = skeleton_scene.instantiate()
-		var offset = Vector2(40, 0).rotated(i * TAU / 3.0)
+func _summon_skeletons() -> void:
+	for i: int in range(3):
+		var skel: Node = skeleton_scene.instantiate()
+		var offset: Vector2 = Vector2(40, 0).rotated(i * TAU / 3.0)
 		skel.global_position = global_position + offset
-		var enemies_node = get_tree().current_scene.get_node_or_null("Enemies")
+		var enemies_node: Node = get_tree().current_scene.get_node_or_null("Enemies")
 		if enemies_node:
 			enemies_node.add_child(skel)
 
 
-func die():
-	is_alive = false
-	GameState.enemies_killed += 1
-	ScreenEffects.register_enemy_kill()
+func _on_die() -> void:
 	ScreenEffects.shake(ScreenEffects.SHAKE_LARGE, 0.3)
 	ScreenEffects.hitstop(0.05)
-	_drop_xp()
-	_maybe_drop_chest()
-	_spawn_death_particles()
-	_play_death_pop()

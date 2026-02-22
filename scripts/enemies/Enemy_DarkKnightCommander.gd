@@ -14,7 +14,7 @@ var summon_timer: float = 0.0
 var summon_interval: float = 8.0
 
 
-func _ready():
+func _ready() -> void:
 	super._ready()
 	max_hp = 800.0
 	current_hp = max_hp
@@ -26,7 +26,7 @@ func _ready():
 	scale = Vector2(2.5, 2.5)
 
 
-func _physics_process(delta):
+func _physics_process(delta: float) -> void:
 	if not is_alive or not is_instance_valid(player):
 		return
 	if is_charging:
@@ -36,11 +36,14 @@ func _physics_process(delta):
 		# Contact damage during charge
 		damage_cooldown -= delta
 		if damage_cooldown <= 0:
-			for i in get_slide_collision_count():
-				var collision = get_slide_collision(i)
-				var collider = collision.get_collider()
+			for i: int in get_slide_collision_count():
+				var collision: KinematicCollision2D = get_slide_collision(i)
+				var collider: Object = collision.get_collider()
 				if collider == player and player.is_alive:
-					player.take_damage(contact_damage * 1.5)
+					var dmg: float = contact_damage * 1.5
+				if GameState.damage_taken_mult != 1.0:
+					dmg *= GameState.damage_taken_mult
+				player.take_damage(dmg)
 					damage_cooldown = damage_interval
 					ScreenEffects.shake(ScreenEffects.SHAKE_MEDIUM, 0.2)
 					break
@@ -59,7 +62,7 @@ func _physics_process(delta):
 		_summon_knights()
 
 
-func _start_charge():
+func _start_charge() -> void:
 	if not is_instance_valid(player):
 		return
 	is_charging = true
@@ -72,23 +75,16 @@ func _start_charge():
 	)
 
 
-func _summon_knights():
-	for i in range(2):
-		var knight = knight_scene.instantiate()
-		var offset = Vector2(50, 0).rotated(i * PI)
+func _summon_knights() -> void:
+	for i: int in range(2):
+		var knight: Node = knight_scene.instantiate()
+		var offset: Vector2 = Vector2(50, 0).rotated(i * PI)
 		knight.global_position = global_position + offset
-		var enemies_node = get_tree().current_scene.get_node_or_null("Enemies")
+		var enemies_node: Node = get_tree().current_scene.get_node_or_null("Enemies")
 		if enemies_node:
 			enemies_node.add_child(knight)
 
 
-func die():
-	is_alive = false
-	GameState.enemies_killed += 1
-	ScreenEffects.register_enemy_kill()
+func _on_die() -> void:
 	ScreenEffects.shake(ScreenEffects.SHAKE_LARGE, 0.4)
 	ScreenEffects.hitstop(0.06)
-	_drop_xp()
-	_maybe_drop_chest()
-	_spawn_death_particles()
-	_play_death_pop()

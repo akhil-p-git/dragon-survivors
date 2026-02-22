@@ -1,5 +1,7 @@
 extends CanvasLayer
 
+const WR = preload("res://scripts/WeaponRegistry.gd")
+
 var is_paused: bool = false
 
 # --- Node references (assigned during _build_ui) ---
@@ -10,25 +12,25 @@ var time_label: Label
 var kills_label: Label
 
 
-func _ready():
+func _ready() -> void:
 	visible = false
 	layer = 15  # Above HUD (5), above LevelUp (10), below ResultsScreen (20)
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_build_ui()
 
 
-func _unhandled_input(event):
+func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("pause"):
 		toggle_pause()
 
 
-func toggle_pause():
+func toggle_pause() -> void:
 	# Don't pause if results screen is showing
-	var results = get_tree().current_scene.get_node_or_null("ResultsScreen")
+	var results: Node = get_tree().current_scene.get_node_or_null("ResultsScreen")
 	if results and results.visible:
 		return
 	# Don't pause if level up UI is showing
-	var level_up = get_tree().current_scene.get_node_or_null("LevelUpUI")
+	var level_up: Node = get_tree().current_scene.get_node_or_null("LevelUpUI")
 	if level_up and level_up.visible:
 		return
 
@@ -44,19 +46,19 @@ func toggle_pause():
 # BUTTON CALLBACKS
 # ---------------------------------------------------------------------------
 
-func _on_resume():
+func _on_resume() -> void:
 	is_paused = false
 	visible = false
 	get_tree().paused = false
 
 
-func _on_main_menu():
+func _on_main_menu() -> void:
 	is_paused = false
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://scenes/MainMenu.tscn")
 
 
-func _on_quit():
+func _on_quit() -> void:
 	get_tree().quit()
 
 
@@ -64,21 +66,21 @@ func _on_quit():
 # STATS REFRESH  (called each time the pause menu opens)
 # ---------------------------------------------------------------------------
 
-func _refresh_stats():
+func _refresh_stats() -> void:
 	_refresh_player_stats()
 	_refresh_time_and_kills()
 	_refresh_weapons()
 	_refresh_passives()
 
 
-func _refresh_player_stats():
+func _refresh_player_stats() -> void:
 	# Clear old stat labels
 	for child in stats_container.get_children():
 		child.queue_free()
 
-	var player = get_tree().current_scene.get_node_or_null("Player")
+	var player: Node = get_tree().current_scene.get_node_or_null("Player")
 	if not player:
-		var no_data = Label.new()
+		var no_data: Label = Label.new()
 		no_data.text = "No player data"
 		no_data.add_theme_font_size_override("font_size", 16)
 		no_data.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
@@ -93,7 +95,7 @@ func _refresh_player_stats():
 	_add_stat_row(stats_container, "Damage", "x%.0f%%" % (damage_mult * 100), Color(1.0, 0.7, 0.3))
 
 	# Speed
-	var effective_speed = player.move_speed * player.passive_move_speed_multiplier
+	var effective_speed: float = player.move_speed * player.passive_move_speed_multiplier
 	_add_stat_row(stats_container, "Speed", "%d" % int(effective_speed), Color(0.5, 0.8, 1.0))
 
 	# Armor
@@ -104,25 +106,25 @@ func _refresh_player_stats():
 	_add_stat_row(stats_container, "Level", "%d" % GameState.player_level, Color.GOLD)
 
 
-func _refresh_time_and_kills():
-	var minutes = int(GameState.game_time) / 60
-	var seconds = int(GameState.game_time) % 60
+func _refresh_time_and_kills() -> void:
+	var minutes: int = int(GameState.game_time) / 60
+	var seconds: int = int(GameState.game_time) % 60
 	if time_label:
 		time_label.text = "%02d:%02d" % [minutes, seconds]
 	if kills_label:
 		kills_label.text = "%d" % GameState.enemies_killed
 
 
-func _refresh_weapons():
+func _refresh_weapons() -> void:
 	# Clear old weapon rows
 	for child in weapons_container.get_children():
 		child.queue_free()
 
-	var player = get_tree().current_scene.get_node_or_null("Player")
-	var weapon_manager = player.get_node_or_null("WeaponManager") if player else null
+	var player: Node = get_tree().current_scene.get_node_or_null("Player")
+	var weapon_manager: Node = player.get_node_or_null("WeaponManager") if player else null
 
 	if not weapon_manager or weapon_manager.weapons.size() == 0:
-		var none_label = Label.new()
+		var none_label: Label = Label.new()
 		none_label.text = "None"
 		none_label.add_theme_font_size_override("font_size", 15)
 		none_label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
@@ -132,7 +134,7 @@ func _refresh_weapons():
 	for w in weapon_manager.weapons:
 		if not is_instance_valid(w):
 			continue
-		var row = _create_item_row(
+		var row: HBoxContainer = _create_item_row(
 			w.weapon_name,
 			w.level,
 			w.max_level,
@@ -141,16 +143,16 @@ func _refresh_weapons():
 		weapons_container.add_child(row)
 
 
-func _refresh_passives():
+func _refresh_passives() -> void:
 	# Clear old passive rows
 	for child in passives_container.get_children():
 		child.queue_free()
 
-	var player = get_tree().current_scene.get_node_or_null("Player")
-	var passive_manager = player.get_node_or_null("PassiveItemManager") if player else null
+	var player: Node = get_tree().current_scene.get_node_or_null("Player")
+	var passive_manager: Node = player.get_node_or_null("PassiveItemManager") if player else null
 
 	if not passive_manager or passive_manager._owned_items.size() == 0:
-		var none_label = Label.new()
+		var none_label: Label = Label.new()
 		none_label.text = "None"
 		none_label.add_theme_font_size_override("font_size", 15)
 		none_label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
@@ -162,7 +164,7 @@ func _refresh_passives():
 		var data = passive_manager.get_item_data(item_name)
 		var max_level = data.max_level if data else 5
 		var color = data.icon_color if data else Color.WHITE
-		var row = _create_item_row(item_name, level, max_level, color)
+		var row: HBoxContainer = _create_item_row(item_name, level, max_level, color)
 		passives_container.add_child(row)
 
 
@@ -170,19 +172,19 @@ func _refresh_passives():
 # UI HELPER FUNCTIONS
 # ---------------------------------------------------------------------------
 
-func _add_stat_row(container: VBoxContainer, stat_name: String, stat_value: String, color: Color):
-	var hbox = HBoxContainer.new()
+func _add_stat_row(container: VBoxContainer, stat_name: String, stat_value: String, color: Color) -> void:
+	var hbox: HBoxContainer = HBoxContainer.new()
 	hbox.add_theme_constant_override("separation", 8)
 	container.add_child(hbox)
 
-	var name_label = Label.new()
+	var name_label: Label = Label.new()
 	name_label.text = stat_name
 	name_label.add_theme_font_size_override("font_size", 16)
 	name_label.add_theme_color_override("font_color", color)
 	name_label.custom_minimum_size = Vector2(90, 0)
 	hbox.add_child(name_label)
 
-	var value_label = Label.new()
+	var value_label: Label = Label.new()
 	value_label.text = stat_value
 	value_label.add_theme_font_size_override("font_size", 16)
 	value_label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9))
@@ -190,18 +192,18 @@ func _add_stat_row(container: VBoxContainer, stat_name: String, stat_value: Stri
 
 
 func _create_item_row(item_name: String, level: int, max_level: int, color: Color) -> HBoxContainer:
-	var hbox = HBoxContainer.new()
+	var hbox: HBoxContainer = HBoxContainer.new()
 	hbox.add_theme_constant_override("separation", 8)
 
 	# Color indicator
-	var indicator = ColorRect.new()
+	var indicator: ColorRect = ColorRect.new()
 	indicator.color = color
 	indicator.custom_minimum_size = Vector2(6, 20)
 	indicator.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	hbox.add_child(indicator)
 
 	# Name
-	var name_label = Label.new()
+	var name_label: Label = Label.new()
 	name_label.text = item_name
 	name_label.add_theme_font_size_override("font_size", 15)
 	name_label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9))
@@ -210,7 +212,7 @@ func _create_item_row(item_name: String, level: int, max_level: int, color: Colo
 	hbox.add_child(name_label)
 
 	# Level
-	var level_label = Label.new()
+	var level_label: Label = Label.new()
 	if level >= max_level:
 		level_label.text = "MAX"
 		level_label.add_theme_color_override("font_color", Color.GOLD)
@@ -225,19 +227,11 @@ func _create_item_row(item_name: String, level: int, max_level: int, color: Colo
 
 
 func _weapon_color(wname: String) -> Color:
-	match wname:
-		"Sword Arc": return Color.STEEL_BLUE
-		"Arrow Shot": return Color.FOREST_GREEN
-		"Fireball": return Color.ORANGE_RED
-		"Spinning Shield": return Color.SILVER
-		"Lightning Strike": return Color.LIGHT_BLUE
-		"Orbiting Orbs": return Color.DODGER_BLUE
-		"Aura": return Color.MEDIUM_SEA_GREEN
-	return Color.WHITE
+	return WR.get_color(wname)
 
 
 func _create_section_title(text: String, color: Color) -> Label:
-	var label = Label.new()
+	var label: Label = Label.new()
 	label.text = text
 	label.add_theme_font_size_override("font_size", 20)
 	label.add_theme_color_override("font_color", color)
@@ -248,9 +242,9 @@ func _create_section_title(text: String, color: Color) -> Label:
 
 
 func _create_separator() -> HSeparator:
-	var sep = HSeparator.new()
+	var sep: HSeparator = HSeparator.new()
 	sep.add_theme_constant_override("separation", 6)
-	var sep_style = StyleBoxFlat.new()
+	var sep_style: StyleBoxFlat = StyleBoxFlat.new()
 	sep_style.bg_color = Color(1, 1, 1, 0.1)
 	sep_style.content_margin_top = 1
 	sep_style.content_margin_bottom = 1
@@ -259,11 +253,11 @@ func _create_separator() -> HSeparator:
 
 
 func _create_styled_button(text: String, callback: Callable, color: Color = Color(0.2, 0.2, 0.35)) -> Button:
-	var btn = Button.new()
+	var btn: Button = Button.new()
 	btn.text = text
 	btn.custom_minimum_size = Vector2(180, 42)
 
-	var normal_style = StyleBoxFlat.new()
+	var normal_style: StyleBoxFlat = StyleBoxFlat.new()
 	normal_style.bg_color = color
 	normal_style.corner_radius_top_left = 6
 	normal_style.corner_radius_top_right = 6
@@ -275,11 +269,11 @@ func _create_styled_button(text: String, callback: Callable, color: Color = Colo
 	normal_style.content_margin_bottom = 8
 	btn.add_theme_stylebox_override("normal", normal_style)
 
-	var hover_style = normal_style.duplicate()
+	var hover_style: StyleBoxFlat = normal_style.duplicate()
 	hover_style.bg_color = color.lightened(0.15)
 	btn.add_theme_stylebox_override("hover", hover_style)
 
-	var pressed_style = normal_style.duplicate()
+	var pressed_style: StyleBoxFlat = normal_style.duplicate()
 	pressed_style.bg_color = color.darkened(0.1)
 	btn.add_theme_stylebox_override("pressed", pressed_style)
 
@@ -292,15 +286,15 @@ func _create_styled_button(text: String, callback: Callable, color: Color = Colo
 # UI CONSTRUCTION  (built entirely in code for consistency with HUD.gd)
 # ---------------------------------------------------------------------------
 
-func _build_ui():
+func _build_ui() -> void:
 	# --- Semi-transparent dark background overlay ---
-	var bg = ColorRect.new()
+	var bg: ColorRect = ColorRect.new()
 	bg.color = Color(0, 0, 0, 0.65)
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
 
 	# --- Centered panel ---
-	var panel = PanelContainer.new()
+	var panel: PanelContainer = PanelContainer.new()
 	panel.set_anchors_preset(Control.PRESET_CENTER)
 	panel.anchor_left = 0.5
 	panel.anchor_top = 0.5
@@ -311,7 +305,7 @@ func _build_ui():
 	panel.offset_right = 320
 	panel.offset_bottom = 300
 
-	var panel_style = StyleBoxFlat.new()
+	var panel_style: StyleBoxFlat = StyleBoxFlat.new()
 	panel_style.bg_color = Color(0.08, 0.08, 0.14, 0.95)
 	panel_style.corner_radius_top_left = 16
 	panel_style.corner_radius_top_right = 16
@@ -330,12 +324,12 @@ func _build_ui():
 	add_child(panel)
 
 	# --- Main VBox inside the panel ---
-	var main_vbox = VBoxContainer.new()
+	var main_vbox: VBoxContainer = VBoxContainer.new()
 	main_vbox.add_theme_constant_override("separation", 10)
 	panel.add_child(main_vbox)
 
 	# ===== TITLE =====
-	var title = Label.new()
+	var title: Label = Label.new()
 	title.text = "PAUSED"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 36)
@@ -346,17 +340,17 @@ func _build_ui():
 	main_vbox.add_child(title)
 
 	# ===== TIME & KILLS ROW =====
-	var time_kills_hbox = HBoxContainer.new()
+	var time_kills_hbox: HBoxContainer = HBoxContainer.new()
 	time_kills_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	time_kills_hbox.add_theme_constant_override("separation", 40)
 	main_vbox.add_child(time_kills_hbox)
 
 	# Time
-	var time_hbox = HBoxContainer.new()
+	var time_hbox: HBoxContainer = HBoxContainer.new()
 	time_hbox.add_theme_constant_override("separation", 6)
 	time_kills_hbox.add_child(time_hbox)
 
-	var time_icon = Label.new()
+	var time_icon: Label = Label.new()
 	time_icon.text = "Time:"
 	time_icon.add_theme_font_size_override("font_size", 18)
 	time_icon.add_theme_color_override("font_color", Color(0.7, 0.7, 0.9))
@@ -369,11 +363,11 @@ func _build_ui():
 	time_hbox.add_child(time_label)
 
 	# Kills
-	var kills_hbox = HBoxContainer.new()
+	var kills_hbox: HBoxContainer = HBoxContainer.new()
 	kills_hbox.add_theme_constant_override("separation", 6)
 	time_kills_hbox.add_child(kills_hbox)
 
-	var kills_icon = Label.new()
+	var kills_icon: Label = Label.new()
 	kills_icon.text = "Kills:"
 	kills_icon.add_theme_font_size_override("font_size", 18)
 	kills_icon.add_theme_color_override("font_color", Color(1.0, 0.5, 0.5))
@@ -388,13 +382,13 @@ func _build_ui():
 	main_vbox.add_child(_create_separator())
 
 	# ===== SCROLLABLE CONTENT AREA =====
-	var scroll = ScrollContainer.new()
+	var scroll: ScrollContainer = ScrollContainer.new()
 	scroll.custom_minimum_size = Vector2(0, 320)
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	main_vbox.add_child(scroll)
 
-	var scroll_vbox = VBoxContainer.new()
+	var scroll_vbox: VBoxContainer = VBoxContainer.new()
 	scroll_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll_vbox.add_theme_constant_override("separation", 10)
 	scroll.add_child(scroll_vbox)
@@ -427,7 +421,7 @@ func _build_ui():
 	# ===== BUTTONS =====
 	main_vbox.add_child(_create_separator())
 
-	var btn_hbox = HBoxContainer.new()
+	var btn_hbox: HBoxContainer = HBoxContainer.new()
 	btn_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	btn_hbox.add_theme_constant_override("separation", 16)
 	main_vbox.add_child(btn_hbox)

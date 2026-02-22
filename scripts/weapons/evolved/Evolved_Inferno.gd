@@ -1,11 +1,10 @@
-extends "res://scripts/weapons/WeaponBase.gd"
+extends "res://scripts/weapons/Weapon_Fireball.gd"
 ## Inferno - Evolved Fireball + Tome
 ## Triple giant fireballs that leave burning ground
+## Inherits fireball_scene from Weapon_Fireball
 
-var fireball_scene: PackedScene = preload("res://scenes/weapons/Fireball.tscn")
 
-
-func _ready():
+func _ready() -> void:
 	super._ready()
 	weapon_name = "Inferno"
 	base_damage = 35.0
@@ -14,16 +13,16 @@ func _ready():
 	max_level = 5
 
 
-func attack():
+func attack() -> void:
 	if not is_instance_valid(player):
 		return
-	var direction = player.facing_direction
-	var extra = get_extra_projectiles()
-	var total = 3 + extra
+	var direction: Vector2 = player.aim_direction
+	var extra: int = get_extra_projectiles()
+	var total: int = 3 + extra
 	for i in range(total):
-		var angle_offset = (i - (total - 1) / 2.0) * 0.25
-		var dir = direction.rotated(angle_offset)
-		var fb = fireball_scene.instantiate()
+		var angle_offset: float = (i - (total - 1) / 2.0) * 0.25
+		var dir: Vector2 = direction.rotated(angle_offset)
+		var fb: Node = fireball_scene.instantiate()
 		fb.damage = get_damage()
 		fb.aoe_radius = 100.0  # Giant radius
 		fb.direction = dir
@@ -32,4 +31,6 @@ func attack():
 		fb.rotation = dir.angle()
 		fb.scale = Vector2(1.8, 1.8)  # Larger
 		fb.modulate = Color(1.0, 0.5, 0.0, 0.95)  # Deep orange
-		get_tree().current_scene.get_node("Projectiles").add_child(fb)
+		var proj_node: Node = _get_projectiles_node()
+		if proj_node:
+			proj_node.add_child(fb)

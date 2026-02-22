@@ -5,7 +5,7 @@ var lifetime: float = 0.3
 var has_hit: Dictionary = {}  # Track which enemies were hit
 
 
-func _ready():
+func _ready() -> void:
 	collision_layer = 4  # PlayerWeapons layer (Layer 3)
 	collision_mask = 2   # Detect Enemies (Layer 2)
 	body_entered.connect(_on_body_entered)
@@ -13,7 +13,7 @@ func _ready():
 	get_tree().create_timer(lifetime).timeout.connect(queue_free)
 
 
-func _on_body_entered(body):
+func _on_body_entered(body: Node2D) -> void:
 	if body.is_in_group("enemies") and not has_hit.has(body.get_instance_id()):
 		has_hit[body.get_instance_id()] = true
 		body.take_damage(damage)

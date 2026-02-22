@@ -7,7 +7,7 @@ var is_attacking: bool = false
 var telegraph_time: float = 0.8
 
 
-func _ready():
+func _ready() -> void:
 	super._ready()
 	move_speed = 35.0
 	max_hp = 120.0
@@ -21,7 +21,7 @@ func _ready():
 	death_particle_color = Color(0.55, 0.55, 0.6)  # Steel/gray particles
 
 
-func _physics_process(delta):
+func _physics_process(delta: float) -> void:
 	if not is_alive or not is_instance_valid(player):
 		return
 
@@ -31,28 +31,31 @@ func _physics_process(delta):
 	super._physics_process(delta)
 
 	# Heavy slash attack
-	var dist = global_position.distance_to(player.global_position)
+	var dist: float = global_position.distance_to(player.global_position)
 	attack_timer += delta
 	if dist <= attack_range and attack_timer >= attack_interval:
 		attack_timer = 0.0
 		_telegraph_attack()
 
 
-func _telegraph_attack():
+func _telegraph_attack() -> void:
 	is_attacking = true
 	# Visual telegraph — flash red
 	modulate = Color(1.0, 0.3, 0.3)
-	get_tree().create_timer(telegraph_time).timeout.connect(_execute_attack)
+	get_tree().create_timer(telegraph_time).timeout.connect(func():
+		if is_instance_valid(self):
+			_execute_attack()
+	)
 
 
-func _execute_attack():
+func _execute_attack() -> void:
 	if not is_alive or not is_instance_valid(player):
 		is_attacking = false
 		modulate = Color.WHITE
 		return
 
 	modulate = Color.WHITE
-	var dist = global_position.distance_to(player.global_position)
+	var dist: float = global_position.distance_to(player.global_position)
 	if dist <= attack_range * 1.5 and player.is_alive:
 		player.take_damage(contact_damage * 2.0)  # Heavy hit
 	is_attacking = false
