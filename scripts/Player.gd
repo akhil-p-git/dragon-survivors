@@ -28,6 +28,8 @@ var passive_move_speed_multiplier: float = 1.0
 var passive_extra_projectiles: int = 0
 var passive_cooldown_multiplier: float = 1.0
 
+var _attack_tween: Tween = null
+
 signal hp_changed(current_hp: float, max_hp: float)
 signal player_died
 
@@ -137,3 +139,45 @@ func _magnet_pulse() -> void:
 	for orb in orbs:
 		if is_instance_valid(orb) and orb.has_method("force_attract"):
 			orb.force_attract()
+
+
+## Play a procedural attack animation on the Body sprite.
+func play_attack_animation(anim_type: String) -> void:
+	var body: Node2D = get_node_or_null("Body")
+	if not body:
+		return
+	if _attack_tween and _attack_tween.is_valid():
+		_attack_tween.kill()
+		body.scale = Vector2.ONE
+		body.rotation = 0.0
+		body.position = Vector2.ZERO
+
+	match anim_type:
+		"bow_shoot":
+			_play_bow_animation(body)
+		"sword_swing":
+			_play_sword_animation(body)
+
+
+func _play_bow_animation(body: Node2D) -> void:
+	_attack_tween = create_tween()
+	# Draw back: squish horizontally, stretch vertically
+	_attack_tween.tween_property(body, "scale", Vector2(0.75, 1.2), 0.06)
+	# Release: snap forward with overshoot
+	_attack_tween.tween_property(body, "scale", Vector2(1.15, 0.85), 0.05).set_trans(Tween.TRANS_BACK)
+	# Settle to normal
+	_attack_tween.tween_property(body, "scale", Vector2(1.0, 1.0), 0.1).set_ease(Tween.EASE_OUT)
+
+
+func _play_sword_animation(body: Node2D) -> void:
+	var dir_sign: float = 1.0 if aim_direction.x >= 0 else -1.0
+	_attack_tween = create_tween()
+	# Wind up: lean back
+	_attack_tween.tween_property(body, "rotation", -0.3 * dir_sign, 0.05)
+	# Slash through: swing forward
+	_attack_tween.tween_property(body, "rotation", 0.4 * dir_sign, 0.08).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+	# Lunge forward slightly
+	_attack_tween.parallel().tween_property(body, "position", aim_direction * 6.0, 0.08).set_ease(Tween.EASE_OUT)
+	# Settle back
+	_attack_tween.tween_property(body, "rotation", 0.0, 0.12).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	_attack_tween.parallel().tween_property(body, "position", Vector2.ZERO, 0.12).set_ease(Tween.EASE_OUT)

@@ -22,7 +22,8 @@ func _ready() -> void:
 	var circle: CircleShape2D = CircleShape2D.new()
 	circle.radius = 10.0
 	shape.shape = circle
-	add_child(shape)
+	shape.set_deferred("disabled", false)
+	call_deferred("add_child", shape)
 	# Bob animation
 	_bob_tween = create_tween().set_loops()
 	_bob_tween.tween_property(self, "position:y", position.y - 4, 0.4).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)

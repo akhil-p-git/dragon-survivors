@@ -1,6 +1,10 @@
 extends "res://scripts/weapons/WeaponBase.gd"
 
+# Keep for evolved weapon (DragonCleaver) compatibility
 var sword_arc_scene: PackedScene = preload("res://scenes/weapons/SwordArc.tscn")
+
+var _SwordVisualScript: GDScript = preload("res://scripts/weapons/KnightSwordVisual.gd")
+var sword_visual: Node2D = null
 
 
 func _ready() -> void:
@@ -8,37 +12,46 @@ func _ready() -> void:
 	weapon_name = "Sword Arc"
 	base_damage = 18.0
 	base_cooldown = 1.0
+	_create_sword_visual()
+
+
+func _create_sword_visual() -> void:
+	if not is_instance_valid(player):
+		return
+	sword_visual = Node2D.new()
+	sword_visual.set_script(_SwordVisualScript)
+	sword_visual.player = player
+	player.add_child(sword_visual)
 
 
 func attack() -> void:
 	if not is_instance_valid(player):
 		return
+	if not is_instance_valid(sword_visual):
+		_create_sword_visual()
+	if not is_instance_valid(sword_visual):
+		return
+
+	var direction: Vector2 = player.aim_direction
+	var scale_bonus: float = 1.0 + (level - 1) * 0.15
+	var damage: float = get_damage()
 	var extra: int = get_extra_projectiles()
-	# Spawn base arc plus extra arcs from Duplicator
-	var total: int = 1 + extra
-	for i in range(total):
-		var angle_offset: float = (i - (total - 1) / 2.0) * 0.4
-		var dir: Vector2 = player.aim_direction.rotated(angle_offset)
-		_spawn_arc(dir)
+	var arc_bonus: float = float(extra)
+
+	# Trigger the body lunge animation
+	if player.has_method("play_attack_animation"):
+		player.play_attack_animation("sword_swing")
+
+	sword_visual.swing(damage, direction, scale_bonus, arc_bonus)
+
 	if level >= 5:
-		# Double slash - second wave slightly delayed
-		get_tree().create_timer(0.15).timeout.connect(func():
-			if is_instance_valid(player):
-				for j in range(total):
-					var ao = (j - (total - 1) / 2.0) * 0.4
-					var d = player.aim_direction.rotated(ao)
-					_spawn_arc(d)
+		# Double slash — second swing after a short delay
+		get_tree().create_timer(0.25).timeout.connect(func():
+			if is_instance_valid(player) and is_instance_valid(sword_visual):
+				sword_visual.swing(damage, player.aim_direction, scale_bonus, arc_bonus)
 		)
 
 
-func _spawn_arc(direction: Vector2) -> void:
-	var arc: Node = sword_arc_scene.instantiate()
-	arc.damage = get_damage()
-	arc.global_position = player.global_position
-	arc.rotation = direction.angle() + PI / 2
-	# Scale with level
-	var scale_bonus: float = 1.0 + (level - 1) * 0.20
-	arc.scale = Vector2(scale_bonus, scale_bonus)
-	var proj_node: Node = _get_projectiles_node()
-	if proj_node:
-		proj_node.add_child(arc)
+func _exit_tree() -> void:
+	if is_instance_valid(sword_visual):
+		sword_visual.queue_free()

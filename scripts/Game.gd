@@ -39,6 +39,7 @@ var arcana_ui_shown_at: Dictionary = {}  # game_time -> bool
 
 
 func _ready() -> void:
+	get_tree().paused = false
 	# Handle character selection
 	var selected: String = GameState.selected_character
 	if selected != "knight":
@@ -108,6 +109,12 @@ func _ready() -> void:
 	destr_spawner.name = "DestructibleSpawner"
 	destr_spawner.set_script(load("res://scripts/environment/DestructibleSpawner.gd"))
 	add_child(destr_spawner)
+
+	# Add hazard spawner (fire + quicksand)
+	var hazard_spawner: Node = Node.new()
+	hazard_spawner.name = "HazardSpawner"
+	hazard_spawner.set_script(load("res://scripts/environment/HazardSpawner.gd"))
+	add_child(hazard_spawner)
 
 	# Setup arcana manager
 	_setup_arcana_manager()

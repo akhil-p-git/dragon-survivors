@@ -1,7 +1,7 @@
 extends Node
 
-@export var rock_count: int = 50
-@export var spawn_range: float = 3000.0
+@export var rock_count: int = 75
+@export var spawn_range: float = 4000.0
 @export var safe_radius: float = 200.0
 
 var rock_scene = preload("res://scenes/environment/Rock.tscn")
@@ -17,8 +17,8 @@ func _spawn_rocks() -> void:
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 	rng.randomize()
 
-	# Generate cluster centers first
-	var cluster_count: int = rock_count / 3
+	# Generate cluster centers — more clusters, smaller groups, more spread
+	var cluster_count: int = rock_count / 2
 	var clusters: Array[Vector2] = []
 	for i in range(cluster_count):
 		var pos: Vector2 = Vector2(
@@ -35,13 +35,13 @@ func _spawn_rocks() -> void:
 	for cluster_pos in clusters:
 		if spawned >= rock_count:
 			break
-		var group_size: int = rng.randi_range(2, 4)
+		var group_size: int = rng.randi_range(1, 3)
 		for j in range(group_size):
 			if spawned >= rock_count:
 				break
 			var offset: Vector2 = Vector2(
-				rng.randf_range(-60, 60),
-				rng.randf_range(-60, 60)
+				rng.randf_range(-90, 90),
+				rng.randf_range(-90, 90)
 			)
 			var rock_pos: Vector2 = cluster_pos + offset
 

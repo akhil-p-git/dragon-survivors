@@ -41,9 +41,9 @@ func _physics_process(delta: float) -> void:
 				var collider: Object = collision.get_collider()
 				if collider == player and player.is_alive:
 					var dmg: float = contact_damage * 1.5
-				if GameState.damage_taken_mult != 1.0:
-					dmg *= GameState.damage_taken_mult
-				player.take_damage(dmg)
+					if GameState.damage_taken_mult != 1.0:
+						dmg *= GameState.damage_taken_mult
+					player.take_damage(dmg)
 					damage_cooldown = damage_interval
 					ScreenEffects.shake(ScreenEffects.SHAKE_MEDIUM, 0.2)
 					break
